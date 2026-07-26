@@ -3,7 +3,7 @@
 <html lang="id" style=""><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>CBT Latihan Soal - Pro</title>
+<title>AnatomischePro</title>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
@@ -367,6 +367,17 @@
 <input checked="" id="shuffleQuestions" type="checkbox"/>
                 Randomize Question Order
             </label>
+<div style="margin-top: 16px; display: flex; align-items: center; justify-content: space-between; font-size: 14px; color: var(--ink-soft); font-weight: 600;">
+    <span>Jumlah Soal</span>
+    <select id="maxQuestions" style="background: var(--bg-deep); color: var(--gold); border: 1px solid var(--gold-line); border-radius: 8px; padding: 6px 12px; font-family: inherit; font-size: 13px; font-weight: 700; outline: none; cursor: pointer; transition: all 0.2s;">
+        <option value="all">Semua Soal</option>
+        <option value="5">5 Soal</option>
+        <option value="10">10 Soal</option>
+        <option value="20">20 Soal</option>
+        <option value="50">50 Soal</option>
+        <option value="100">100 Soal</option>
+    </select>
+</div>
 <hr class="divider"/>
 <div style="display:flex; gap:12px; flex-direction:column;">
 <button class="btn btn-primary btn-full" onclick="startQuiz()">
@@ -841,6 +852,15 @@
         }
 
         if (document.getElementById('shuffleQuestions').checked) pool = shuffle(pool);
+        
+        const maxQSelect = document.getElementById('maxQuestions');
+        if (maxQSelect && maxQSelect.value !== 'all') {
+            const limit = parseInt(maxQSelect.value);
+            if (!isNaN(limit) && limit < pool.length) {
+                pool = pool.slice(0, limit);
+            }
+        }
+
         currentQuiz = pool;
         userAnswers = new Array(pool.length).fill(null);
         doubtStatus = new Array(pool.length).fill(false);
