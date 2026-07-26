@@ -318,7 +318,10 @@
 <div class="bg-orbs"><span></span><span></span><span></span></div>
 <div id="globalProgress"><div id="globalProgressBar"></div></div>
 <header>
-<div class="logo">Anatom<span class="">ische</span> PRO</div>
+<div style="display: flex; align-items: center; gap: 12px;">
+    <img src="logo.png" alt="Logo" style="height: 38px; width: 38px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--gold);" />
+    <div class="logo">Anatom<span class="">ische</span> PRO</div>
+</div>
 <div class="subtitle" id="headerSubtitle" style="margin-right: 16px;">Exclusive Question Bank</div>
 <button class="btn btn-ghost" id="btnAdminMode" onclick="toggleAdminModeClick()" style="padding: 6px 12px; font-size: 12px; border-color: var(--gold-line); margin-right: 8px;">
     🔑 ADMIN MODE
@@ -402,6 +405,7 @@
 <div class="q-progress-fill" id="qProgressFill"></div>
 </div>
 </div>
+<div id="questionMetadataContainer" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom: 20px;"></div>
 <div class="question-text" id="questionText"></div>
 <!-- Hint/Guess Mode -->
 <div id="hintModeContainer" style="display:none;">
@@ -457,7 +461,7 @@
 <div class="score-number" id="finalScoreNum">0</div>
 <div class="" style="color:var(--gold); font-weight:800; letter-spacing:2px; margin-top:-10px; margin-bottom:20px;">FINAL PERFORMANCE SCORE</div>
 <h2 class="" id="resultTitle" style="font-size:28px; margin-bottom:32px;">Kuis Selesai!</h2>
-<div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; margin-bottom:40px;">
+<div id="resultStatsGrid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; margin-bottom:40px;">
 <div class="stat-item">
 <div class="val" id="resCorrect" style="color:var(--green)">0</div>
 <div class="lbl">CORRECT</div>
@@ -469,6 +473,10 @@
 <div class="stat-item">
 <div class="val" id="resEmpty" style="color:var(--ink-faint)">0</div>
 <div class="lbl">SKIPPED</div>
+</div>
+<div class="stat-item" id="xpResultContainer" style="display:none;">
+<div class="val" id="resXp" style="color:var(--gold)">0</div>
+<div class="lbl">XP EARNED</div>
 </div>
 </div>
 <div style="display:flex; gap:16px; justify-content:center;">
@@ -506,6 +514,46 @@
     let questionDatabase = {};
     let currentQuiz = [], currentIndex = 0;
     let userAnswers = [], doubtStatus = [], isRevealed = [], visibleHints = [];
+
+    function parseDataset(data) {
+        if (!data) return null;
+        let questions = data.questions || data.cards || data;
+        if (!Array.isArray(questions)) return null;
+
+        return questions.map(q => {
+            // Check if hint mode/flashcard (clue, hints array, or petunjuk_1 exists)
+            if (q.clue || (q.hints && Array.isArray(q.hints)) || q.petunjuk_1) {
+                let mappedQ = {
+                    pertanyaan: q.clue || q.pertanyaan || q.question || 'Identifikasi objek berdasarkan petunjuk strategis berikut:',
+                    jawaban_benar: q.answer || q.jawaban_benar || q.correct_answer || '',
+                    pembahasan: q.explanation || q.pembahasan || '',
+                    metadata: q.metadata || null,
+                    featureFlags: data.featureFlags || null
+                };
+                if (q.hints && Array.isArray(q.hints)) {
+                    q.hints.forEach((hint, hIdx) => {
+                        mappedQ[`petunjuk_${hIdx + 1}`] = hint;
+                    });
+                } else {
+                    for (let i = 1; i <= 10; i++) {
+                        if (q[`petunjuk_${i}`]) mappedQ[`petunjuk_${i}`] = q[`petunjuk_${i}`];
+                    }
+                }
+                return mappedQ;
+            }
+
+            // Otherwise multiple choice
+            let answerText = typeof q.correct_answer === 'number' && q.answers ? q.answers[q.correct_answer - 1] : (q.correct_answer || q.jawaban_benar || '');
+            return {
+                pertanyaan: q.pertanyaan || q.question || '',
+                pilihan: q.pilihan || q.answers || q.options || [],
+                jawaban_benar: answerText,
+                pembahasan: q.pembahasan || q.explanation || '',
+                eliminasi_opsi: q.eliminasi_opsi || null,
+                metadata: q.metadata || null
+            };
+        });
+    }
     
     let isAdminMode = false;
     let adminPassword = sessionStorage.getItem('adminPassword') || '';
@@ -690,24 +738,17 @@
                 }
             } else {
                 // Local Fallback (if they somehow get here without admin mode)
-                let finalData = null;
-                if (ext === 'yaml' || ext === 'yml') {
-                    try {
-                        const yamlParsed = jsyaml.load(raw);
-                        let questions = yamlParsed.questions || yamlParsed;
-                        if (Array.isArray(questions)) {
-                            finalData = questions.map(q => {
-                                if (q.petunjuk_1) return q;
-                                let answerText = typeof q.correct_answer === 'number' && q.answers ? q.answers[q.correct_answer - 1] : q.correct_answer;
-                                return { pertanyaan: q.question, pilihan: q.answers, jawaban_benar: answerText, pembahasan: q.explanation };
-                            });
-                        }
-                    } catch (err) {}
-                } else if (ext === 'json') {
-                    try { finalData = JSON.parse(raw); } catch (e) {}
-                }
+                let parsed = null;
+                try {
+                    if (ext === 'yaml' || ext === 'yml') {
+                        parsed = jsyaml.load(raw);
+                    } else if (ext === 'json') {
+                        parsed = JSON.parse(raw);
+                    }
+                } catch (err) {}
 
-                if (finalData && Array.isArray(finalData)) {
+                let finalData = parseDataset(parsed);
+                if (finalData) {
                     questionDatabase[file.name] = finalData;
                     localStorage.setItem('questionDB', JSON.stringify(questionDatabase));
                     showToast(`Loaded locally ${finalData.length} items from "${file.name}"`, '⚜️');
@@ -819,13 +860,8 @@
                     const res = await fetch(`/api/dataset/${encodeURIComponent(name)}`);
                     if (res.ok) {
                         const data = await res.json();
-                        let questions = data.questions || data;
-                        if (Array.isArray(questions)) {
-                            const mapped = questions.map(q => {
-                                if (q.petunjuk_1) return q;
-                                let answerText = typeof q.correct_answer === 'number' && q.answers ? q.answers[q.correct_answer - 1] : q.correct_answer;
-                                return { pertanyaan: q.pertanyaan || q.question, pilihan: q.pilihan || q.answers, jawaban_benar: q.jawaban_benar || answerText, pembahasan: q.pembahasan || q.explanation };
-                            });
+                        const mapped = parseDataset(data);
+                        if (mapped) {
                             questionDatabase[name] = mapped; // Cache it
                             return mapped;
                         }
@@ -916,6 +952,63 @@
         const guessInput = document.getElementById('guessInputField');
         const btnMintaHint = document.getElementById('btnMintaHint');
         
+        const metaContainer = document.getElementById('questionMetadataContainer');
+        metaContainer.innerHTML = '';
+        if (q.metadata && typeof q.metadata === 'object') {
+            const meta = q.metadata;
+            const addBadge = (label, value, bg = 'rgba(212,175,55,0.1)', border = 'var(--gold-line)', color = 'var(--gold)') => {
+                if (!value) return;
+                const badge = document.createElement('span');
+                badge.style.display = 'inline-flex';
+                badge.style.alignItems = 'center';
+                badge.style.padding = '4px 10px';
+                badge.style.borderRadius = '99px';
+                badge.style.fontSize = '11px';
+                badge.style.fontWeight = '700';
+                badge.style.background = bg;
+                badge.style.border = `1px solid ${border}`;
+                badge.style.color = color;
+                badge.style.textTransform = 'uppercase';
+                badge.style.letterSpacing = '0.5px';
+                badge.innerHTML = `<span style="opacity:0.6; margin-right:4px;">${label}:</span> ${escHtml(value)}`;
+                metaContainer.appendChild(badge);
+            };
+
+            addBadge('BLOK', meta.blok);
+            addBadge('SKDI', meta.tingkat_kompetensi_skdi, 'rgba(16,185,129,0.1)', 'rgba(16,185,129,0.2)', 'var(--green)');
+            addBadge('SUB', meta.sub_kompetensi_klinis, 'rgba(255,255,255,0.05)', 'rgba(255,255,255,0.1)', '#fff');
+            addBadge('KOGNITIF', meta.tingkat_kognitif);
+            
+            let diffColor = 'var(--gold)';
+            let diffBg = 'rgba(212,175,55,0.1)';
+            let diffBorder = 'var(--gold-line)';
+            if (meta.tingkat_kesulitan === 'Mudah') {
+                diffColor = 'var(--green)'; diffBg = 'rgba(16,185,129,0.1)'; diffBorder = 'rgba(16,185,129,0.2)';
+            } else if (meta.tingkat_kesulitan === 'Sulit') {
+                diffColor = '#ef4444'; diffBg = 'rgba(239,68,68,0.1)'; diffBorder = 'rgba(239,68,68,0.2)';
+            }
+            addBadge('KESULITAN', meta.tingkat_kesulitan, diffBg, diffBorder, diffColor);
+            
+            if (meta.kegawatdaruratan === true || String(meta.kegawatdaruratan).toLowerCase() === 'true') {
+                const emBadge = document.createElement('span');
+                emBadge.style.display = 'inline-flex';
+                emBadge.style.alignItems = 'center';
+                emBadge.style.padding = '4px 10px';
+                emBadge.style.borderRadius = '99px';
+                emBadge.style.fontSize = '11px';
+                emBadge.style.fontWeight = '800';
+                emBadge.style.background = 'rgba(239,68,68,0.2)';
+                emBadge.style.border = '1px solid #ef4444';
+                emBadge.style.color = '#fff';
+                emBadge.innerHTML = '🚨 IGD / GAWAT DARURAT';
+                metaContainer.appendChild(emBadge);
+            }
+
+            if (meta.xp) {
+                addBadge('XP', `+${meta.xp} XP`, 'rgba(212,175,55,0.2)', 'var(--gold)', 'var(--gold)');
+            }
+        }
+        
         qTextEl.innerHTML = q.pertanyaan || q.question || (isHintMode ? "Identifikasi objek berdasarkan petunjuk strategis berikut:" : "");
         optionsContainer.innerHTML = '';
         hintList.innerHTML = '';
@@ -984,6 +1077,35 @@
         const pemBox = document.getElementById('pembahasanBox');
         if (revealed) {
             const isBenar = checkIsCorrect(userAnswers[idx], q);
+            let eliminasiHtml = '';
+            if (q.eliminasi_opsi && typeof q.eliminasi_opsi === 'object') {
+                eliminasiHtml = `
+                    <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
+                        <div style="font-weight: 800; font-size: 12px; color: var(--gold); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">Analisis Pilihan Jawaban:</div>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                `;
+                Object.entries(q.eliminasi_opsi).forEach(([optLetter, reasoning]) => {
+                    const cleanReason = String(reasoning).trim();
+                    const isCorrectReason = cleanReason.toLowerCase().startsWith('benar');
+                    const badgeColor = isCorrectReason ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.04)';
+                    const textColor = isCorrectReason ? 'var(--green)' : 'var(--red)';
+                    const borderColor = isCorrectReason ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.1)';
+                    const dotIndex = cleanReason.indexOf('.');
+                    const displayReason = dotIndex !== -1 ? cleanReason.slice(dotIndex + 1).trim() : cleanReason;
+                    
+                    eliminasiHtml += `
+                        <div style="font-size: 13px; line-height: 1.6; padding: 10px 14px; background: ${badgeColor}; border: 1px solid ${borderColor}; border-radius: 8px; display: flex; align-items: flex-start; gap: 10px;">
+                            <span style="font-weight: 900; color: ${textColor}; min-width: 20px; text-align: center; font-size: 12px; background: ${isCorrectReason ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.1)'}; border-radius: 4px; padding: 1px 4px;">${optLetter}</span>
+                            <div style="color: var(--ink-soft);"><strong style="color: ${textColor}; font-weight: 700;">${isCorrectReason ? 'BENAR' : 'SALAH'}</strong>. ${escHtml(displayReason)}</div>
+                        </div>
+                    `;
+                });
+                eliminasiHtml += `
+                        </div>
+                    </div>
+                `;
+            }
+
             pemBox.style.display = 'block';
             pemBox.innerHTML = `
                 <div class="pembahasan-box">
@@ -993,6 +1115,7 @@
                     <div class="pembahasan-body">
                         <div class="pembahasan-kunci">KUNCI JAWABAN: ${escHtml(kunciJawaban)}</div>
                         <div>${q.pembahasan || q.explanation || 'Analisis teknis tidak tersedia for this item.'}</div>
+                        ${eliminasiHtml}
                     </div>
                 </div>`;
         } else pemBox.style.display = 'none';
@@ -1019,8 +1142,20 @@
         const kunci = (question.jawaban_benar || question.answer || '').toLowerCase().trim();
         const input = String(answer).toLowerCase().trim();
         if (input === kunci) return true;
+
+        const flags = question.featureFlags || {};
+        const acceptPartial = flags.acceptPartialMatch || question.acceptPartialMatch;
+        if (acceptPartial && input.length >= 3 && (kunci.includes(input) || input.includes(kunci))) {
+            return true;
+        }
+
         if (question.kunci_alternatif && Array.isArray(question.kunci_alternatif)) {
-            return question.kunci_alternatif.some(k => k.toLowerCase().trim() === input);
+            return question.kunci_alternatif.some(k => {
+                const altKunci = k.toLowerCase().trim();
+                if (altKunci === input) return true;
+                if (acceptPartial && input.length >= 3 && (altKunci.includes(input) || input.includes(altKunci))) return true;
+                return false;
+            });
         }
         return false;
     }
@@ -1080,10 +1215,15 @@
     }
 
     function calculateScore() {
-        let correct = 0, empty = 0;
+        let correct = 0, empty = 0, totalXp = 0, earnedXp = 0;
         currentQuiz.forEach((q, i) => {
+            const qXp = (q.metadata && q.metadata.xp) ? parseInt(q.metadata.xp, 10) : 0;
+            totalXp += qXp;
             if (userAnswers[i] === null || userAnswers[i] === '') empty++;
-            else if (checkIsCorrect(userAnswers[i], q)) correct++;
+            else if (checkIsCorrect(userAnswers[i], q)) {
+                correct++;
+                earnedXp += qXp;
+            }
         });
         const total = currentQuiz.length;
         const wrong = total - correct - empty;
@@ -1093,6 +1233,17 @@
         document.getElementById('resWrong').textContent = wrong;
         document.getElementById('resEmpty').textContent = empty;
         document.getElementById('finalScoreNum').textContent = score;
+
+        const xpContainer = document.getElementById('xpResultContainer');
+        const statsGrid = document.getElementById('resultStatsGrid');
+        if (totalXp > 0) {
+            xpContainer.style.display = 'block';
+            statsGrid.style.gridTemplateColumns = 'repeat(4, 1fr)';
+            document.getElementById('resXp').textContent = `${earnedXp}/${totalXp}`;
+        } else {
+            xpContainer.style.display = 'none';
+            statsGrid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+        }
 
         let title = "Analisis Selesai";
         if (score >= 80) title = "ELITE PERFORMANCE 🏆";
@@ -1113,21 +1264,85 @@
             const jawaban = userAnswers[i];
             const isCorrect = checkIsCorrect(jawaban, q);
             const rawQuestion = q.pertanyaan || q.question || (q.petunjuk_1 ? `Guessing: ${q.petunjuk_1.slice(0, 40)}...` : "");
+            
+            // Build metadata badges for review
+            let metaHtml = '';
+            if (q.metadata && typeof q.metadata === 'object') {
+                const meta = q.metadata;
+                const badges = [];
+                const addBadgeStr = (label, value, bg = 'rgba(212,175,55,0.1)', color = 'var(--gold)') => {
+                    if (!value) return;
+                    badges.push(`
+                        <span style="display:inline-flex; align-items:center; padding:2px 8px; border-radius:99px; font-size:10px; font-weight:700; background:${bg}; border:1px solid rgba(255,255,255,0.05); color:${color}; text-transform:uppercase;">
+                            <span style="opacity:0.6; margin-right:4px;">${label}:</span>${escHtml(value)}
+                        </span>
+                    `);
+                };
+                addBadgeStr('BLOK', meta.blok);
+                addBadgeStr('SKDI', meta.tingkat_kompetensi_skdi, 'rgba(16,185,129,0.1)', 'var(--green)');
+                addBadgeStr('SUB', meta.sub_kompetensi_klinis, 'rgba(255,255,255,0.05)', '#fff');
+                addBadgeStr('KESULITAN', meta.tingkat_kesulitan);
+                if (meta.kegawatdaruratan === true || String(meta.kegawatdaruratan).toLowerCase() === 'true') {
+                    badges.push(`
+                        <span style="display:inline-flex; align-items:center; padding:2px 8px; border-radius:99px; font-size:10px; font-weight:800; background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#fff;">
+                            🚨 IGD
+                        </span>
+                    `);
+                }
+                if (meta.xp) {
+                    badges.push(`
+                        <span style="display:inline-flex; align-items:center; padding:2px 8px; border-radius:99px; font-size:10px; font-weight:800; background:rgba(212,175,55,0.15); border:1px solid var(--gold); color:var(--gold);">
+                            +${meta.xp} XP
+                        </span>
+                    `);
+                }
+                metaHtml = `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;">${badges.join('')}</div>`;
+            }
+
+            // Build options breakdown for review
+            let reviewEliminasiHtml = '';
+            if (q.eliminasi_opsi && typeof q.eliminasi_opsi === 'object') {
+                reviewEliminasiHtml = `
+                    <div style="margin-top: 14px; margin-bottom: 14px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
+                        <div style="font-weight: 800; font-size: 11px; color: var(--gold); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Analisis Pilihan:</div>
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                `;
+                Object.entries(q.eliminasi_opsi).forEach(([optLetter, reasoning]) => {
+                    const cleanReason = String(reasoning).trim();
+                    const isCorrectReason = cleanReason.toLowerCase().startsWith('benar');
+                    const textColor = isCorrectReason ? 'var(--green)' : 'var(--red)';
+                    const dotIndex = cleanReason.indexOf('.');
+                    const displayReason = dotIndex !== -1 ? cleanReason.slice(dotIndex + 1).trim() : cleanReason;
+                    
+                    reviewEliminasiHtml += `
+                        <div style="font-size: 12px; line-height: 1.5; color: var(--ink-soft);">
+                            <span style="font-weight: 800; color: ${textColor}; margin-right: 6px;">[${optLetter}] ${isCorrectReason ? 'BENAR' : 'SALAH'}:</span> ${escHtml(displayReason)}
+                        </div>
+                    `;
+                });
+                reviewEliminasiHtml += `
+                        </div>
+                    </div>
+                `;
+            }
+
             html += `
             <div class="review-item" onclick="this.querySelector('.review-item-body').style.display = this.querySelector('.review-item-body').style.display === 'block' ? 'none' : 'block'">
                 <div class="review-item-header">
                     <span style="font-weight:900; color:var(--gold); font-size:12px;">ITEM ${i + 1}</span>
                     <span class="review-item-status ${isCorrect ? 'benar' : (jawaban ? 'salah' : '')}" style="font-size:10px; font-weight:800; text-transform:uppercase;">${isCorrect ? 'Correct' : (jawaban ? 'Incorrect' : 'Skipped')}</span>
-                    <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; color:var(--ink-soft);">${escHtml(rawQuestion)}</span>
+                    <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; color:var(--ink-soft);">${escHtml(rawQuestion.replace(/<[^>]*>/g, ' '))}</span>
                     <span style="color:var(--gold-line)">▼</span>
                 </div>
                 <div class="review-item-body" style="display:none; padding:20px; border-top:1px solid var(--gold-line); font-size:14px; background:rgba(0,0,0,0.2);">
-                    <div style="margin-bottom:16px; font-weight:600;">${escHtml(rawQuestion)}</div>
+                    ${metaHtml}
+                    <div style="margin-bottom:16px; font-weight:600; line-height:1.6;">${rawQuestion}</div>
                     <div style="display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
                         <span class="review-ans-chip" style="background:${isCorrect ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; color:${isCorrect ? 'var(--green)' : '#ef4444'};">JAWAB: ${escHtml(jawaban || 'None')}</span>
                         ${!isCorrect ? `<span class="review-ans-chip kunci">KUNCI: ${escHtml(kunci)}</span>` : ''}
                     </div>
-                    <div style="color:var(--ink-soft); font-size:13px; border-left:3px solid var(--gold); padding-left:12px;">
+                    ${reviewEliminasiHtml}
+                    <div style="color:var(--ink-soft); font-size:13px; border-left:3px solid var(--gold); padding-left:12px; line-height:1.6;">
                         <strong>ANALYTICS:</strong><br>${q.pembahasan || q.explanation || 'No further analysis.'}
                     </div>
                 </div>
