@@ -624,6 +624,7 @@
                     questionDatabase[ds.name] = { count: ds.count, isPlaceholder: true };
                 });
                 renderDatabaseList();
+                applyUrlShareLinkSelection();
             } else {
                 throw new Error('Server error response');
             }
@@ -631,6 +632,18 @@
             console.warn('Backend server offline. Falling back to local storage...', err);
             questionDatabase = JSON.parse(localStorage.getItem('questionDB')) || {};
             renderDatabaseList();
+            applyUrlShareLinkSelection();
+        }
+    }
+
+    function applyUrlShareLinkSelection() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetDataset = urlParams.get('dataset');
+        if (targetDataset && questionDatabase[targetDataset]) {
+            document.querySelectorAll('.db-checkbox').forEach(cb => {
+                cb.checked = (cb.value === targetDataset);
+            });
+            showToast(`Dataset "${targetDataset}" terpilih otomatis!`, '🔗');
         }
     }
 
@@ -721,6 +734,14 @@
         });
     }
 
+    function copyShareLink(name) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('dataset', name);
+        navigator.clipboard.writeText(url.toString())
+            .then(() => showToast('Link share berhasil disalin!', '🔗'))
+            .catch(() => showToast('Gagal menyalin link', '❌'));
+    }
+
     function renderDatabaseList() {
         const list = document.getElementById('databaseList');
         const keys = Object.keys(questionDatabase);
@@ -732,15 +753,21 @@
             const entry = questionDatabase[name];
             const count = Array.isArray(entry) ? entry.length : (entry.count || 0);
             const deleteBtn = isAdminMode ? `
-                <button class="btn btn-danger" onclick="deleteDataset('${escHtml(name)}')" style="padding: 4px 8px; font-size: 11px; margin-left: auto; border-radius: 6px; flex-shrink: 0;">
+                <button class="btn btn-danger" onclick="deleteDataset('${escHtml(name)}')" style="padding: 4px 8px; font-size: 11px; margin-left: 8px; border-radius: 6px; flex-shrink: 0;">
                     🗑
                 </button>
             ` : '';
+            const shareBtn = `
+                <button class="btn btn-ghost" onclick="copyShareLink('${escHtml(name)}')" style="padding: 4px 8px; font-size: 11px; margin-left: 8px; border-radius: 6px; border-color: var(--gold-line); flex-shrink: 0;" title="Salin Link Share">
+                    🔗
+                </button>
+            `;
             return `
             <li class="file-item" style="display: flex; align-items: center; width: 100%;">
                 <input type="checkbox" value="${escHtml(name)}" class="db-checkbox" id="cb_${idx}" checked style="flex-shrink: 0;">
                 <label for="cb_${idx}" style="margin-left: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;">${escHtml(name)}</label>
                 <span class="badge" style="flex-shrink: 0; margin-left: 8px;">${count} PRO</span>
+                ${shareBtn}
                 ${deleteBtn}
             </li>`;
         }).join('');
