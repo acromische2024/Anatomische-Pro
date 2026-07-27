@@ -324,6 +324,9 @@
     <div class="logo">Anatom<span class="">ische</span> PRO</div>
 </div>
 <div class="subtitle" id="headerSubtitle" style="margin-right: 16px;">Exclusive Question Bank</div>
+<button class="btn btn-ghost" id="btnResumeQuiz" onclick="resumeActiveSession()" style="display:none; padding: 6px 12px; font-size: 12px; border-color: var(--gold); color: var(--gold); margin-right: 8px;">
+    ↩️ LANJUTKAN
+</button>
 <button class="btn btn-ghost" id="btnAdminMode" onclick="toggleAdminModeClick()" style="padding: 6px 12px; font-size: 12px; border-color: var(--gold-line); margin-right: 8px;">
     🔑 ADMIN MODE
 </button>
@@ -509,6 +512,7 @@
     let questionDatabase = {};
     let currentQuiz = [], currentIndex = 0;
     let userAnswers = [], doubtStatus = [], isRevealed = [], visibleHints = [];
+    let currentQuizKey = '';
 
     function parseDataset(data) {
         if (!data) return null;
@@ -560,13 +564,29 @@
         setTimeout(() => t.classList.remove('show'), 3000);
     }
 
-    function openModal(title, msg, action) {
+    function openModal(title, msg, action, cancelAction) {
         document.getElementById('modalTitle').textContent = title;
         document.getElementById('modalMsg').textContent = msg;
         document.getElementById('modalConfirmBtn').onclick = () => { closeModal(); action(); };
+        
+        const cancelBtn = document.querySelector('#modalOverlay .btn-ghost');
+        if (cancelBtn) {
+            cancelBtn.onclick = () => { 
+                closeModal(); 
+                if (cancelAction) cancelAction(); 
+            };
+        }
+        
         document.getElementById('modalOverlay').style.display = 'flex';
     }
-    function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
+    function closeModal() { 
+        document.getElementById('modalOverlay').style.display = 'none'; 
+        // Reset cancel button to default closeModal behavior
+        const cancelBtn = document.querySelector('#modalOverlay .btn-ghost');
+        if (cancelBtn) {
+            cancelBtn.onclick = closeModal;
+        }
+    }
 
     function escHtml(str) {
         if (str === null || str === undefined) return '';
@@ -803,6 +823,21 @@
         list.innerHTML = keys.map((name, idx) => {
             const entry = questionDatabase[name];
             const count = Array.isArray(entry) ? entry.length : (entry.count || 0);
+            
+            const sessions = getSessions();
+            const hasSavedProgress = !!sessions[name];
+            let progressBtn = '';
+            if (hasSavedProgress) {
+                const s = sessions[name];
+                const answered = s.userAnswers ? s.userAnswers.filter(a => a !== null && a !== '').length : 0;
+                const total = s.currentQuiz.length;
+                progressBtn = `
+                    <span onclick="loadSessionByKey('${escHtml(name)}')" style="display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; background: var(--gold-soft); border: 1px solid var(--gold); color: var(--gold); cursor: pointer; margin-left: 8px; font-family: inherit; flex-shrink: 0;" title="Lanjutkan Progress">
+                        ↩️ RESUME (${answered}/${total})
+                    </span>
+                `;
+            }
+
             const deleteBtn = isAdminMode ? `
                 <button class="btn btn-danger" onclick="deleteDataset('${escHtml(name)}')" style="padding: 4px 8px; font-size: 11px; margin-left: 8px; border-radius: 6px; flex-shrink: 0;">
                     🗑
@@ -818,6 +853,7 @@
                 <input type="checkbox" value="${escHtml(name)}" class="db-checkbox" id="cb_${idx}" checked style="flex-shrink: 0;">
                 <label for="cb_${idx}" style="margin-left: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;">${escHtml(name)}</label>
                 <span class="badge" style="flex-shrink: 0; margin-left: 8px;">${count} PRO</span>
+                ${progressBtn}
                 ${shareBtn}
                 ${deleteBtn}
             </li>`;
@@ -843,6 +879,25 @@
     }
 
     async function startQuiz() {
+        const checked = document.querySelectorAll('.db-checkbox:checked');
+        if (checked.length === 0) { showToast('Pilih minimal satu dataset!', '⚠️'); return; }
+        
+        const key = Array.from(checked).map(cb => cb.value).sort().join('+');
+        const sessions = getSessions();
+        if (sessions[key]) {
+            openModal('Mulai Latihan Baru?', 'Anda memiliki progres latihan yang belum selesai untuk dataset ini. Memulai latihan baru akan menghapus progres sesi sebelumnya.', () => {
+                clearSession(key);
+                const resumeBtn = document.getElementById('btnResumeQuiz');
+                if (resumeBtn) resumeBtn.style.display = 'none';
+                startQuizActual(key);
+            });
+        } else {
+            startQuizActual(key);
+        }
+    }
+
+    async function startQuizActual(key) {
+        currentQuizKey = key;
         const checked = document.querySelectorAll('.db-checkbox:checked');
         if (checked.length === 0) { showToast('Pilih minimal satu dataset!', '⚠️'); return; }
         
@@ -913,12 +968,34 @@
     }
 
     function goHome() {
-        clearSession();
         document.getElementById('cbtPage').style.display = 'none';
         document.getElementById('resultPage').style.display = 'none';
         document.getElementById('setupPage').style.display = 'block';
         document.getElementById('btnBackHome').style.display = 'none';
         document.getElementById('headerSubtitle').textContent = 'Exclusive Question Bank';
+        updateResumeButtonVisibility();
+    }
+
+    function resumeActiveSession() {
+        document.getElementById('setupPage').style.display = 'none';
+        document.getElementById('cbtPage').style.display = 'block';
+        document.getElementById('btnBackHome').style.display = 'inline-flex';
+        document.getElementById('btnResumeQuiz').style.display = 'none';
+        buildNavGrid();
+        loadQuestion(currentIndex);
+    }
+
+    function updateResumeButtonVisibility() {
+        const resumeBtn = document.getElementById('btnResumeQuiz');
+        if (resumeBtn) {
+            const hasSession = localStorage.getItem('anatomische_pro_session');
+            const onSetupPage = document.getElementById('setupPage').style.display !== 'none';
+            if (hasSession && onSetupPage) {
+                resumeBtn.style.display = 'inline-flex';
+            } else {
+                resumeBtn.style.display = 'none';
+            }
+        }
     }
 
     function buildNavGrid() {
@@ -1273,6 +1350,8 @@
         document.getElementById('cbtPage').style.display = 'none';
         document.getElementById('resultPage').style.display = 'block';
         clearSession();
+        const resumeBtn = document.getElementById('btnResumeQuiz');
+        if (resumeBtn) resumeBtn.style.display = 'none';
         buildReviewSection();
     }
 
@@ -1378,50 +1457,78 @@
         section.innerHTML = html;
     }
 
+    function getSessions() {
+        try {
+            return JSON.parse(localStorage.getItem('anatomische_pro_sessions')) || {};
+        } catch (e) {
+            return {};
+        }
+    }
+
     function saveSession() {
-        if (!currentQuiz || currentQuiz.length === 0) return;
-        const session = {
+        if (!currentQuiz || currentQuiz.length === 0 || !currentQuizKey) return;
+        const sessions = getSessions();
+        sessions[currentQuizKey] = {
             currentQuiz,
             currentIndex,
             userAnswers,
             doubtStatus,
             isRevealed,
-            visibleHints
+            visibleHints,
+            timestamp: Date.now()
         };
-        localStorage.setItem('anatomische_pro_session', JSON.stringify(session));
+        localStorage.setItem('anatomische_pro_sessions', JSON.stringify(sessions));
+        localStorage.setItem('anatomische_pro_last_active_key', currentQuizKey);
     }
 
-    function clearSession() {
-        localStorage.removeItem('anatomische_pro_session');
+    function clearSession(key) {
+        if (!key) key = currentQuizKey;
+        if (!key) return;
+        const sessions = getSessions();
+        delete sessions[key];
+        localStorage.setItem('anatomische_pro_sessions', JSON.stringify(sessions));
+        
+        const lastActive = localStorage.getItem('anatomische_pro_last_active_key');
+        if (lastActive === key) {
+            const keys = Object.keys(sessions);
+            if (keys.length > 0) {
+                localStorage.setItem('anatomische_pro_last_active_key', keys[0]);
+            } else {
+                localStorage.removeItem('anatomische_pro_last_active_key');
+            }
+        }
+    }
+
+    function loadSessionByKey(key) {
+        const sessions = getSessions();
+        const session = sessions[key];
+        if (session) {
+            currentQuizKey = key;
+            currentQuiz = session.currentQuiz;
+            currentIndex = session.currentIndex || 0;
+            userAnswers = session.userAnswers || new Array(currentQuiz.length).fill(null);
+            doubtStatus = session.doubtStatus || new Array(currentQuiz.length).fill(false);
+            isRevealed = session.isRevealed || new Array(currentQuiz.length).fill(false);
+            visibleHints = session.visibleHints || new Array(currentQuiz.length).fill(0);
+
+            // Transition to CBT Page
+            document.getElementById('qTotalDisplay').textContent = String(currentQuiz.length).padStart(2, '0');
+            document.getElementById('headerSubtitle').textContent = `LIVE TRAINING: ${currentQuiz.length} ITEMS`;
+            document.getElementById('btnBackHome').style.display = 'inline-flex';
+            document.getElementById('setupPage').style.display = 'none';
+            document.getElementById('cbtPage').style.display = 'block';
+            const resumeBtn = document.getElementById('btnResumeQuiz');
+            if (resumeBtn) resumeBtn.style.display = 'none';
+            buildNavGrid();
+            loadQuestion(currentIndex);
+            showToast('Progres kuis dipulihkan!', '🔄');
+        }
     }
 
     function restoreSession() {
-        const saved = localStorage.getItem('anatomische_pro_session');
-        if (saved) {
-            try {
-                const session = JSON.parse(saved);
-                if (session && Array.isArray(session.currentQuiz) && session.currentQuiz.length > 0) {
-                    currentQuiz = session.currentQuiz;
-                    currentIndex = session.currentIndex || 0;
-                    userAnswers = session.userAnswers || new Array(currentQuiz.length).fill(null);
-                    doubtStatus = session.doubtStatus || new Array(currentQuiz.length).fill(false);
-                    isRevealed = session.isRevealed || new Array(currentQuiz.length).fill(false);
-                    visibleHints = session.visibleHints || new Array(currentQuiz.length).fill(0);
-
-                    // Show CBT Page
-                    document.getElementById('qTotalDisplay').textContent = String(currentQuiz.length).padStart(2, '0');
-                    document.getElementById('headerSubtitle').textContent = `LIVE TRAINING: ${currentQuiz.length} ITEMS`;
-                    document.getElementById('btnBackHome').style.display = 'inline-flex';
-                    document.getElementById('setupPage').style.display = 'none';
-                    document.getElementById('cbtPage').style.display = 'block';
-                    buildNavGrid();
-                    loadQuestion(currentIndex);
-                    showToast('Melanjutkan sesi latihan sebelumnya...', '🔄');
-                }
-            } catch (e) {
-                console.error('Failed to restore session:', e);
-                clearSession();
-            }
+        const lastActive = localStorage.getItem('anatomische_pro_last_active_key');
+        if (lastActive) {
+            loadSessionByKey(lastActive);
         }
     }
 
