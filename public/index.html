@@ -319,7 +319,7 @@
 <div class="bg-orbs"><span></span><span></span><span></span></div>
 <div id="globalProgress"><div id="globalProgressBar"></div></div>
 <header>
-<div style="display: flex; align-items: center; gap: 12px;">
+<div onclick="goHome()" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
     <img src="logo.png" alt="Logo" style="height: 38px; width: 38px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--gold);" />
     <div class="logo">Anatom<span class="">ische</span> PRO</div>
 </div>
@@ -808,11 +808,11 @@
                     🗑
                 </button>
             ` : '';
-            const shareBtn = `
+            const shareBtn = isAdminMode ? `
                 <button class="btn btn-ghost" onclick="copyShareLink('${escHtml(name)}')" style="padding: 4px 8px; font-size: 11px; margin-left: 8px; border-radius: 6px; border-color: var(--gold-line); flex-shrink: 0;" title="Salin Link Share">
                     🔗
                 </button>
-            `;
+            ` : '';
             return `
             <li class="file-item" style="display: flex; align-items: center; width: 100%;">
                 <input type="checkbox" value="${escHtml(name)}" class="db-checkbox" id="cb_${idx}" checked style="flex-shrink: 0;">
@@ -909,9 +909,11 @@
         document.getElementById('cbtPage').style.display = 'block';
         buildNavGrid();
         loadQuestion(0);
+        saveSession();
     }
 
     function goHome() {
+        clearSession();
         document.getElementById('cbtPage').style.display = 'none';
         document.getElementById('resultPage').style.display = 'none';
         document.getElementById('setupPage').style.display = 'block';
@@ -1049,7 +1051,7 @@
                 guessInput.style.background = isCorrect ? 'rgba(16,185,129,0.1)' : 'rgba(153,27,27,0.1)';
             } else {
                 guessInput.style.borderColor = ''; guessInput.style.background = '';
-                guessInput.oninput = (e) => { userAnswers[idx] = e.target.value; updateNavGridUI(); updateSidebarStats(); };
+                guessInput.oninput = (e) => { userAnswers[idx] = e.target.value; updateNavGridUI(); updateSidebarStats(); saveSession(); };
             }
         } else {
             optionsContainer.style.display = 'block';
@@ -1078,6 +1080,7 @@
                         label.classList.add('selected');
                         updateNavGridUI();
                         updateSidebarStats();
+                        saveSession();
                     };
                 }
                 optionsContainer.appendChild(label);
@@ -1171,12 +1174,13 @@
         return false;
     }
     
-    function revealNextHint() { visibleHints[currentIndex]++; loadQuestion(currentIndex); }
+    function revealNextHint() { visibleHints[currentIndex]++; loadQuestion(currentIndex); saveSession(); }
 
     function cekJawabanSekarang() {
         if (!userAnswers[currentIndex]) { showToast('Pilih jawaban untuk verifikasi!', '⚠️'); return; }
         isRevealed[currentIndex] = true;
         loadQuestion(currentIndex); 
+        saveSession();
     }
 
     function toggleDoubt() {
@@ -1184,11 +1188,15 @@
         document.getElementById('doubtToggle').className = 'doubt-toggle' + (doubtStatus[currentIndex] ? ' active' : '');
         updateNavGridUI();
         updateSidebarStats();
+        saveSession();
     }
 
     function navigateQuestion(step) {
         const next = currentIndex + step;
-        if (next >= 0 && next < currentQuiz.length) loadQuestion(next);
+        if (next >= 0 && next < currentQuiz.length) {
+            loadQuestion(next);
+            saveSession();
+        }
     }
 
     function updateNavGridUI() {
@@ -1264,6 +1272,7 @@
         document.getElementById('resultTitle').textContent = title;
         document.getElementById('cbtPage').style.display = 'none';
         document.getElementById('resultPage').style.display = 'block';
+        clearSession();
         buildReviewSection();
     }
 
@@ -1368,7 +1377,56 @@
         });
         section.innerHTML = html;
     }
+
+    function saveSession() {
+        if (!currentQuiz || currentQuiz.length === 0) return;
+        const session = {
+            currentQuiz,
+            currentIndex,
+            userAnswers,
+            doubtStatus,
+            isRevealed,
+            visibleHints
+        };
+        localStorage.setItem('anatomische_pro_session', JSON.stringify(session));
+    }
+
+    function clearSession() {
+        localStorage.removeItem('anatomische_pro_session');
+    }
+
+    function restoreSession() {
+        const saved = localStorage.getItem('anatomische_pro_session');
+        if (saved) {
+            try {
+                const session = JSON.parse(saved);
+                if (session && Array.isArray(session.currentQuiz) && session.currentQuiz.length > 0) {
+                    currentQuiz = session.currentQuiz;
+                    currentIndex = session.currentIndex || 0;
+                    userAnswers = session.userAnswers || new Array(currentQuiz.length).fill(null);
+                    doubtStatus = session.doubtStatus || new Array(currentQuiz.length).fill(false);
+                    isRevealed = session.isRevealed || new Array(currentQuiz.length).fill(false);
+                    visibleHints = session.visibleHints || new Array(currentQuiz.length).fill(0);
+
+                    // Show CBT Page
+                    document.getElementById('qTotalDisplay').textContent = String(currentQuiz.length).padStart(2, '0');
+                    document.getElementById('headerSubtitle').textContent = `LIVE TRAINING: ${currentQuiz.length} ITEMS`;
+                    document.getElementById('btnBackHome').style.display = 'inline-flex';
+                    document.getElementById('setupPage').style.display = 'none';
+                    document.getElementById('cbtPage').style.display = 'block';
+                    buildNavGrid();
+                    loadQuestion(currentIndex);
+                    showToast('Melanjutkan sesi latihan sebelumnya...', '🔄');
+                }
+            } catch (e) {
+                console.error('Failed to restore session:', e);
+                clearSession();
+            }
+        }
+    }
+
     loadDatasetsFromServer();
     checkAdminState();
+    restoreSession();
 </script>
 </body></html>
