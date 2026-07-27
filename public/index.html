@@ -373,21 +373,14 @@
             </label>
 <div style="margin-top: 16px; display: flex; align-items: center; justify-content: space-between; font-size: 14px; color: var(--ink-soft); font-weight: 600;">
     <span>Jumlah Soal</span>
-    <select id="maxQuestions" style="background: var(--bg-deep); color: var(--gold); border: 1px solid var(--gold-line); border-radius: 8px; padding: 6px 12px; font-family: inherit; font-size: 13px; font-weight: 700; outline: none; cursor: pointer; transition: all 0.2s;">
-        <option value="all">Semua Soal</option>
-        <option value="5">5 Soal</option>
-        <option value="10">10 Soal</option>
-        <option value="20">20 Soal</option>
-        <option value="50">50 Soal</option>
-        <option value="100">100 Soal</option>
-    </select>
+    <input type="number" id="maxQuestions" min="1" placeholder="Semua Soal" style="background: var(--bg-deep); color: var(--gold); border: 1px solid var(--gold-line); border-radius: 8px; padding: 6px 12px; font-family: inherit; font-size: 13px; font-weight: 700; outline: none; width: 120px; text-align: center; transition: all 0.2s;" />
 </div>
 <hr class="divider"/>
 <div style="display:flex; gap:12px; flex-direction:column;">
 <button class="btn btn-primary btn-full" onclick="startQuiz()">
                     ▶ MULAI TRAINING
                 </button>
-<button class="btn btn-danger btn-full" onclick="confirmClearDB()" style="font-size:11px; padding:8px;">
+<button class="btn btn-danger btn-full" id="btnClearDbBtn" onclick="confirmClearDB()" style="font-size:11px; padding:8px; display:none;">
                     🗑 BERSIHKAN SEMUA DATA
                 </button>
 </div>
@@ -407,6 +400,7 @@
 </div>
 </div>
 <div id="questionMetadataContainer" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom: 20px;"></div>
+<div id="questionImageContainer" style="display:none; text-align:center; margin-bottom:20px;"></div>
 <div class="question-text" id="questionText"></div>
 <!-- Hint/Guess Mode -->
 <div id="hintModeContainer" style="display:none;">
@@ -634,6 +628,7 @@
         const btnAdmin = document.getElementById('btnAdminMode');
         const lockedCard = document.getElementById('uploadLockedState');
         const unlockedCard = document.getElementById('uploadUnlockedState');
+        const clearDbBtn = document.getElementById('btnClearDbBtn');
         
         if (adminPassword) {
             try {
@@ -650,6 +645,7 @@
                     btnAdmin.style.borderColor = 'var(--gold)';
                     if (lockedCard) lockedCard.style.display = 'none';
                     if (unlockedCard) unlockedCard.style.display = 'block';
+                    if (clearDbBtn) clearDbBtn.style.display = 'block';
                 } else {
                     throw new Error('Invalid credentials');
                 }
@@ -662,6 +658,7 @@
                 btnAdmin.style.borderColor = 'var(--gold-line)';
                 if (lockedCard) lockedCard.style.display = 'block';
                 if (unlockedCard) unlockedCard.style.display = 'none';
+                if (clearDbBtn) clearDbBtn.style.display = 'none';
             }
         } else {
             isAdminMode = false;
@@ -670,6 +667,7 @@
             btnAdmin.style.borderColor = 'var(--gold-line)';
             if (lockedCard) lockedCard.style.display = 'block';
             if (unlockedCard) unlockedCard.style.display = 'none';
+            if (clearDbBtn) clearDbBtn.style.display = 'none';
         }
         renderDatabaseList();
     }
@@ -890,10 +888,10 @@
 
         if (document.getElementById('shuffleQuestions').checked) pool = shuffle(pool);
         
-        const maxQSelect = document.getElementById('maxQuestions');
-        if (maxQSelect && maxQSelect.value !== 'all') {
-            const limit = parseInt(maxQSelect.value);
-            if (!isNaN(limit) && limit < pool.length) {
+        const maxQInput = document.getElementById('maxQuestions');
+        if (maxQInput && maxQInput.value.trim() !== '') {
+            const limit = parseInt(maxQInput.value.trim(), 10);
+            if (!isNaN(limit) && limit > 0 && limit < pool.length) {
                 pool = pool.slice(0, limit);
             }
         }
@@ -940,7 +938,7 @@
         const total = currentQuiz.length;
         const revealed = isRevealed[idx];
         const kunciJawaban = q.jawaban_benar || q.answer || '';
-        const isHintMode = !!q.petunjuk_1;
+        const isHintMode = !q.pilihan || q.pilihan.length === 0;
 
         document.getElementById('qNumDisplay').textContent = String(idx + 1).padStart(2, '0');
         document.getElementById('qProgressFill').style.width = ((idx + 1) / total * 100) + '%';
@@ -1010,6 +1008,18 @@
             }
         }
         
+        const imgContainer = document.getElementById('questionImageContainer');
+        const imgUrl = q.gambar || q.image || q.image_url || q.url_gambar;
+        if (imgContainer) {
+            if (imgUrl) {
+                imgContainer.style.display = 'block';
+                imgContainer.innerHTML = `<img src="${imgUrl}" style="max-width: 100%; max-height: 350px; border-radius: var(--radius); border: 1.5px solid var(--gold-line); object-fit: contain;" />`;
+            } else {
+                imgContainer.style.display = 'none';
+                imgContainer.innerHTML = '';
+            }
+        }
+
         qTextEl.innerHTML = q.pertanyaan || q.question || (isHintMode ? "Identifikasi objek berdasarkan petunjuk strategis berikut:" : "");
         optionsContainer.innerHTML = '';
         hintList.innerHTML = '';
@@ -1327,6 +1337,12 @@
                 `;
             }
 
+            let reviewImgHtml = '';
+            const imgUrl = q.gambar || q.image || q.image_url || q.url_gambar;
+            if (imgUrl) {
+                reviewImgHtml = `<div style="text-align:center; margin-bottom:16px;"><img src="${imgUrl}" style="max-width: 100%; max-height: 250px; border-radius: var(--radius); border: 1.5px solid var(--gold-line); object-fit: contain;" /></div>`;
+            }
+
             html += `
             <div class="review-item" onclick="this.querySelector('.review-item-body').style.display = this.querySelector('.review-item-body').style.display === 'block' ? 'none' : 'block'">
                 <div class="review-item-header">
@@ -1337,6 +1353,7 @@
                 </div>
                 <div class="review-item-body" style="display:none; padding:20px; border-top:1px solid var(--gold-line); font-size:14px; background:rgba(0,0,0,0.2);">
                     ${metaHtml}
+                    ${reviewImgHtml}
                     <div style="margin-bottom:16px; font-weight:600; line-height:1.6;">${rawQuestion}</div>
                     <div style="display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
                         <span class="review-ans-chip" style="background:${isCorrect ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; color:${isCorrect ? 'var(--green)' : '#ef4444'};">JAWAB: ${escHtml(jawaban || 'None')}</span>
