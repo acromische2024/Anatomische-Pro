@@ -357,6 +357,11 @@
         <div class="upload-icon">📁</div>
         <p class=""><strong>Klik untuk eksplorasi file</strong><br/>Format JSON &amp; YAML terverifikasi</p>
     </div>
+    <div style="margin-top: 16px; text-align: left;">
+        <label style="font-size: 11px; color: var(--gold); font-weight: 800; display: block; margin-bottom: 6px; letter-spacing: 0.5px; text-transform: uppercase;">Folder Tujuan (Opsional)</label>
+        <input type="text" id="targetFolderInput" list="existingFoldersList" placeholder="Root / Tanpa Folder" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--gold-line); background: var(--bg-deep); color: #fff; font-family: inherit; font-size: 13px; font-weight: 600; outline: none; transition: border-color 0.2s;" />
+        <datalist id="existingFoldersList"></datalist>
+    </div>
     <div style="margin-top:20px;">
         <button class="btn btn-primary btn-full" onclick="document.getElementById('fileInputSetup').click()">
             ＋ Tambahkan Dataset
@@ -736,12 +741,14 @@
 
             if (isAdminMode) {
                 try {
+                    const folderVal = document.getElementById('targetFolderInput').value.trim();
+                    const targetName = folderVal ? `${folderVal}__folder__${file.name}` : file.name;
                     const res = await fetch('/api/upload', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             password: adminPassword,
-                            filename: file.name,
+                            filename: targetName,
                             content: raw
                         })
                     });
@@ -820,44 +827,155 @@
             list.innerHTML = '<div style="text-align:center; padding:20px; color:var(--ink-faint); font-size:13px;">Belum ada dataset yang diunggah</div>';
             return;
         }
-        list.innerHTML = keys.map((name, idx) => {
+
+        // Group by nested folder paths
+        const tree = { folders: {}, files: [] };
+        const separator = '__folder__';
+        const folderPaths = new Set();
+        
+        keys.forEach(name => {
             const entry = questionDatabase[name];
             const count = Array.isArray(entry) ? entry.length : (entry.count || 0);
             
-            const sessions = getSessions();
-            const hasSavedProgress = !!sessions[name];
-            let progressBtn = '';
-            if (hasSavedProgress) {
-                const s = sessions[name];
-                const answered = s.userAnswers ? s.userAnswers.filter(a => a !== null && a !== '').length : 0;
-                const total = s.currentQuiz.length;
-                progressBtn = `
-                    <span onclick="loadSessionByKey('${escHtml(name)}')" style="display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; background: var(--gold-soft); border: 1px solid var(--gold); color: var(--gold); cursor: pointer; margin-left: 8px; font-family: inherit; flex-shrink: 0;" title="Lanjutkan Progress">
-                        ↩️ RESUME (${answered}/${total})
-                    </span>
-                `;
+            let folderPath = '';
+            let displayName = name;
+            if (name.includes(separator)) {
+                const parts = name.split(separator);
+                folderPath = parts[0];
+                displayName = parts.slice(1).join(separator);
+                folderPaths.add(folderPath);
+            }
+            
+            const pathParts = folderPath ? folderPath.split('/') : [];
+            let current = tree;
+            pathParts.forEach(part => {
+                const cleanPart = part.trim();
+                if (!cleanPart) return;
+                if (!current.folders[cleanPart]) {
+                    current.folders[cleanPart] = { folders: {}, files: [] };
+                }
+                current = current.folders[cleanPart];
+            });
+            current.files.push({ name, displayName, count });
+        });
+
+        // Update datalist for upload folder input with all active paths
+        const datalist = document.getElementById('existingFoldersList');
+        if (datalist) {
+            datalist.innerHTML = Array.from(folderPaths)
+                .map(f => `<option value="${escHtml(f)}"></option>`)
+                .join('');
+        }
+
+        let globalCheckboxIdx = 0;
+        let folderCheckboxIdx = 0;
+
+        function renderTreeNode(node, nodeName, depth, parentPathId) {
+            const safeName = nodeName.replace(/[^a-zA-Z0-9]/g, '_');
+            const pathId = parentPathId ? `${parentPathId}_${safeName}` : safeName;
+            
+            let subfoldersHtml = '';
+            Object.entries(node.folders).forEach(([subName, subNode]) => {
+                subfoldersHtml += renderTreeNode(subNode, subName, depth + 1, pathId);
+            });
+            
+            let filesHtml = node.files.map(file => {
+                const name = file.name;
+                const displayName = file.displayName;
+                const count = file.count;
+                globalCheckboxIdx++;
+                
+                const sessions = getSessions();
+                const hasSavedProgress = !!sessions[name];
+                let progressBtn = '';
+                if (hasSavedProgress) {
+                    const s = sessions[name];
+                    const answered = s.userAnswers ? s.userAnswers.filter(a => a !== null && a !== '').length : 0;
+                    const total = s.currentQuiz.length;
+                    progressBtn = `
+                        <span onclick="loadSessionByKey('${escHtml(name)}')" style="display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; background: var(--gold-soft); border: 1px solid var(--gold); color: var(--gold); cursor: pointer; margin-left: 8px; font-family: inherit; flex-shrink: 0;" title="Lanjutkan Progress">
+                            ↩️ RESUME (${answered}/${total})
+                        </span>
+                    `;
+                }
+
+                const deleteBtn = isAdminMode ? `
+                    <button class="btn btn-danger" onclick="deleteDataset('${escHtml(name)}')" style="padding: 4px 8px; font-size: 11px; margin-left: 8px; border-radius: 6px; flex-shrink: 0;">
+                        🗑
+                    </button>
+                ` : '';
+                const shareBtn = isAdminMode ? `
+                    <button class="btn btn-ghost" onclick="copyShareLink('${escHtml(name)}')" style="padding: 4px 8px; font-size: 11px; margin-left: 8px; border-radius: 6px; border-color: var(--gold-line); flex-shrink: 0;" title="Salin Link Share">
+                        🔗
+                    </button>
+                ` : '';
+                
+                return `
+                <li class="file-item" style="display: flex; align-items: center; width: 100%;">
+                    <input type="checkbox" value="${escHtml(name)}" class="db-checkbox" id="cb_${globalCheckboxIdx}" checked style="flex-shrink: 0;">
+                    <label for="cb_${globalCheckboxIdx}" style="margin-left: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;">${escHtml(displayName)}</label>
+                    <span class="badge" style="flex-shrink: 0; margin-left: 8px;">${count} PRO</span>
+                    ${progressBtn}
+                    ${shareBtn}
+                    ${deleteBtn}
+                </li>`;
+            }).join('');
+
+            if (nodeName === '_root') {
+                let rootFilesHtml = '';
+                if (filesHtml) {
+                    rootFilesHtml = `
+                    <div class="folder-group" style="margin-bottom: 16px; border: 1px solid var(--gold-line); border-radius: 8px; overflow: hidden; background: rgba(0,0,0,0.15);">
+                        <div class="folder-header" style="padding: 10px 14px; background: rgba(212,175,55,0.05); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--gold-line);">
+                            <span style="font-weight: 800; font-size: 13px; color: var(--gold); letter-spacing: 0.5px;">📂 TANPA FOLDER</span>
+                        </div>
+                        <ul class="file-list" style="padding: 10px; display: flex; flex-direction: column; gap: 8px;">
+                            ${filesHtml}
+                        </ul>
+                    </div>`;
+                }
+                return subfoldersHtml + rootFilesHtml;
             }
 
-            const deleteBtn = isAdminMode ? `
-                <button class="btn btn-danger" onclick="deleteDataset('${escHtml(name)}')" style="padding: 4px 8px; font-size: 11px; margin-left: 8px; border-radius: 6px; flex-shrink: 0;">
-                    🗑
-                </button>
-            ` : '';
-            const shareBtn = isAdminMode ? `
-                <button class="btn btn-ghost" onclick="copyShareLink('${escHtml(name)}')" style="padding: 4px 8px; font-size: 11px; margin-left: 8px; border-radius: 6px; border-color: var(--gold-line); flex-shrink: 0;" title="Salin Link Share">
-                    🔗
-                </button>
-            ` : '';
+            folderCheckboxIdx++;
+            const folderTitle = `📁 ${nodeName.toUpperCase()}`;
+            
             return `
-            <li class="file-item" style="display: flex; align-items: center; width: 100%;">
-                <input type="checkbox" value="${escHtml(name)}" class="db-checkbox" id="cb_${idx}" checked style="flex-shrink: 0;">
-                <label for="cb_${idx}" style="margin-left: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;">${escHtml(name)}</label>
-                <span class="badge" style="flex-shrink: 0; margin-left: 8px;">${count} PRO</span>
-                ${progressBtn}
-                ${shareBtn}
-                ${deleteBtn}
-            </li>`;
-        }).join('');
+            <div class="folder-group" id="folder_group_${escHtml(pathId)}" style="margin-left: ${depth > 1 ? 12 : 0}px; margin-bottom: 12px; border: 1px solid var(--gold-line); border-radius: 8px; overflow: hidden; background: rgba(0,0,0,0.15);">
+                <div class="folder-header" style="padding: 8px 12px; background: rgba(212,175,55,0.03); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--gold-line);">
+                    <div style="display: flex; align-items: center; gap: 10px; cursor: pointer; flex-grow: 1;" onclick="toggleFolderCollapse('${escHtml(pathId)}')">
+                        <span style="font-weight: 800; font-size: 12px; color: var(--gold); letter-spacing: 0.5px;">${escHtml(folderTitle)}</span>
+                    </div>
+                    <input type="checkbox" id="chk_folder_${folderCheckboxIdx}" onchange="toggleFolderFiles('${escHtml(pathId)}', this.checked)" checked style="cursor: pointer;" />
+                </div>
+                <div id="folder_list_${escHtml(pathId)}" style="padding: 8px; display: flex; flex-direction: column; gap: 6px;">
+                    ${subfoldersHtml}
+                    ${filesHtml ? `<ul style="display:flex; flex-direction:column; gap:6px; list-style:none; padding:0; margin:0;">${filesHtml}</ul>` : ''}
+                </div>
+            </div>`;
+        }
+
+        list.innerHTML = renderTreeNode(tree, '_root', 0, '');
+    }
+
+    function toggleFolderCollapse(pathId) {
+        const list = document.getElementById(`folder_list_${pathId}`);
+        if (list) {
+            list.style.display = list.style.display === 'none' ? 'flex' : 'none';
+        }
+    }
+
+    function toggleFolderFiles(pathId, checked) {
+        const list = document.getElementById(`folder_list_${pathId}`);
+        if (list) {
+            list.querySelectorAll('.db-checkbox').forEach(cb => {
+                cb.checked = checked;
+            });
+            list.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.checked = checked;
+            });
+        }
+        updateResumeButtonVisibility();
     }
 
     function confirmClearDB() {
