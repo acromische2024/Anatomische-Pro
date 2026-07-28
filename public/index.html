@@ -475,6 +475,7 @@
 </div>
 <div class="card">
 <div class="card-title"><div class="step-badge">2</div> KONFIGURASI</div>
+<div id="dbStatusWarning" style="display:none; padding:12px 14px; margin-bottom:16px; border-radius:8px; font-size:12px; line-height:1.5; font-weight:600; border:1px solid rgba(255,255,255,0.1);"></div>
 <div class="" style="font-size:11px; color:var(--gold); font-weight:800; letter-spacing:1px; margin-bottom:10px;">DATASET TERSEDIA</div>
 <ul class="file-list" id="databaseList">
 <div class="" style="text-align:center; padding:20px; color:var(--ink-faint); font-size:13px;">Belum ada dataset yang diunggah</div>
@@ -627,7 +628,24 @@
 
     function parseDataset(data) {
         if (!data) return null;
-        let questions = data.questions || data.cards || data;
+        let parsedData = data;
+        if (typeof data === 'string') {
+            try {
+                parsedData = JSON.parse(data);
+            } catch (e) {
+                try {
+                    if (typeof jsyaml !== 'undefined') {
+                        parsedData = jsyaml.load(data);
+                    } else {
+                        return null;
+                    }
+                } catch (yamlErr) {
+                    return null;
+                }
+            }
+        }
+        if (!parsedData) return null;
+        let questions = parsedData.questions || parsedData.cards || parsedData;
         if (!Array.isArray(questions)) return null;
 
         return questions.map(q => {
@@ -801,6 +819,40 @@
             if (clearDbBtn) clearDbBtn.style.display = 'none';
         }
         renderDatabaseList();
+    }
+
+    async function checkServerHealth() {
+        const warningEl = document.getElementById('dbStatusWarning');
+        if (!warningEl) return;
+
+        try {
+            const res = await fetch('/api/health');
+            if (res.ok) {
+                const status = await res.json();
+                if (!status.databaseConnection) {
+                    warningEl.style.display = 'block';
+                    warningEl.style.background = 'rgba(239, 68, 68, 0.15)';
+                    warningEl.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                    warningEl.style.color = '#fca5a5';
+                    warningEl.innerHTML = `
+                        <strong>⚠️ GANGGUAN DATABASE:</strong> Gagal terhubung ke database cloud Supabase.<br>
+                        <span style="font-size:11px; opacity:0.8; display:block; margin-top:4px;">Detail: ${status.error || 'Proyek database mungkin sedang nonaktif/paused.'}</span>
+                    `;
+                } else {
+                    warningEl.style.display = 'none';
+                }
+            } else {
+                throw new Error('Server returned non-ok status');
+            }
+        } catch (err) {
+            warningEl.style.display = 'block';
+            warningEl.style.background = 'rgba(217, 119, 6, 0.15)';
+            warningEl.style.borderColor = 'rgba(217, 119, 6, 0.3)';
+            warningEl.style.color = '#fde047';
+            warningEl.innerHTML = `
+                <strong>📡 MODE OFFLINE / BACKEND OFFLINE:</strong> Menggunakan penyimpanan lokal. Beberapa fitur cloud mungkin tidak tersedia.
+            `;
+        }
     }
 
     async function loadDatasetsFromServer() {
@@ -1236,10 +1288,23 @@
     }
 
     function loadQuestion(idx) {
+        if (!currentQuiz || currentQuiz.length === 0) {
+            console.error("loadQuestion failed: currentQuiz is empty.");
+            goHome();
+            return;
+        }
+        if (idx < 0 || idx >= currentQuiz.length) {
+            idx = 0;
+        }
         currentIndex = idx;
         const q = currentQuiz[idx];
+        if (!q) {
+            console.error("loadQuestion failed: question at index", idx, "is undefined.");
+            goHome();
+            return;
+        }
         const total = currentQuiz.length;
-        const revealed = isRevealed[idx];
+        const revealed = isRevealed[idx] || false;
         const kunciJawaban = q.jawaban_benar || q.answer || '';
         const isHintMode = !q.pilihan || q.pilihan.length === 0;
 
@@ -1912,35 +1977,43 @@
 
     function saveSession() {
         if (!currentQuiz || currentQuiz.length === 0 || !currentQuizKey) return;
-        const sessions = getSessions();
-        sessions[currentQuizKey] = {
-            currentQuiz,
-            currentIndex,
-            userAnswers,
-            doubtStatus,
-            isRevealed,
-            visibleHints,
-            timestamp: Date.now()
-        };
-        localStorage.setItem('anatomische_pro_sessions', JSON.stringify(sessions));
-        localStorage.setItem('anatomische_pro_last_active_key', currentQuizKey);
+        try {
+            const sessions = getSessions();
+            sessions[currentQuizKey] = {
+                currentQuiz,
+                currentIndex,
+                userAnswers,
+                doubtStatus,
+                isRevealed,
+                visibleHints,
+                timestamp: Date.now()
+            };
+            localStorage.setItem('anatomische_pro_sessions', JSON.stringify(sessions));
+            localStorage.setItem('anatomische_pro_last_active_key', currentQuizKey);
+        } catch (e) {
+            console.error('Failed to save session to localStorage:', e);
+        }
     }
 
     function clearSession(key) {
         if (!key) key = currentQuizKey;
         if (!key) return;
-        const sessions = getSessions();
-        delete sessions[key];
-        localStorage.setItem('anatomische_pro_sessions', JSON.stringify(sessions));
-        
-        const lastActive = localStorage.getItem('anatomische_pro_last_active_key');
-        if (lastActive === key) {
-            const keys = Object.keys(sessions);
-            if (keys.length > 0) {
-                localStorage.setItem('anatomische_pro_last_active_key', keys[0]);
-            } else {
-                localStorage.removeItem('anatomische_pro_last_active_key');
+        try {
+            const sessions = getSessions();
+            delete sessions[key];
+            localStorage.setItem('anatomische_pro_sessions', JSON.stringify(sessions));
+            
+            const lastActive = localStorage.getItem('anatomische_pro_last_active_key');
+            if (lastActive === key) {
+                const keys = Object.keys(sessions);
+                if (keys.length > 0) {
+                    localStorage.setItem('anatomische_pro_last_active_key', keys[0]);
+                } else {
+                    localStorage.removeItem('anatomische_pro_last_active_key');
+                }
             }
+        } catch (e) {
+            console.error('Failed to clear session from localStorage:', e);
         }
     }
 
@@ -1948,13 +2021,31 @@
         const sessions = getSessions();
         const session = sessions[key];
         if (session) {
+            if (!session.currentQuiz || !Array.isArray(session.currentQuiz) || session.currentQuiz.length === 0) {
+                console.warn('Sesi tidak valid atau kosong. Menghapus sesi...', key);
+                clearSession(key);
+                return;
+            }
             currentQuizKey = key;
             currentQuiz = session.currentQuiz;
-            currentIndex = session.currentIndex || 0;
-            userAnswers = session.userAnswers || new Array(currentQuiz.length).fill(null);
-            doubtStatus = session.doubtStatus || new Array(currentQuiz.length).fill(false);
-            isRevealed = session.isRevealed || new Array(currentQuiz.length).fill(false);
-            visibleHints = session.visibleHints || new Array(currentQuiz.length).fill(0);
+            currentIndex = typeof session.currentIndex === 'number' ? session.currentIndex : 0;
+            if (currentIndex < 0 || currentIndex >= currentQuiz.length) currentIndex = 0;
+
+            userAnswers = (Array.isArray(session.userAnswers) && session.userAnswers.length === currentQuiz.length)
+                ? session.userAnswers
+                : new Array(currentQuiz.length).fill(null);
+
+            doubtStatus = (Array.isArray(session.doubtStatus) && session.doubtStatus.length === currentQuiz.length)
+                ? session.doubtStatus
+                : new Array(currentQuiz.length).fill(false);
+
+            isRevealed = (Array.isArray(session.isRevealed) && session.isRevealed.length === currentQuiz.length)
+                ? session.isRevealed
+                : new Array(currentQuiz.length).fill(false);
+
+            visibleHints = (Array.isArray(session.visibleHints) && session.visibleHints.length === currentQuiz.length)
+                ? session.visibleHints
+                : new Array(currentQuiz.length).fill(0);
 
             // Transition to CBT Page
             document.getElementById('qTotalDisplay').textContent = String(currentQuiz.length).padStart(2, '0');
@@ -1977,6 +2068,7 @@
         }
     }
 
+    checkServerHealth();
     loadDatasetsFromServer();
     checkAdminState();
     restoreSession();
