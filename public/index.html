@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <style>
         :root {
             /* Black & Gold Theme Variables */
@@ -418,6 +419,7 @@
     </style>
 </head>
 <body>
+<canvas id="fireCanvas" style="position:fixed; inset:0; pointer-events:none; z-index:9999; display:none;"></canvas>
 <div class="bg-orbs"><span></span><span></span><span></span></div>
 <div id="globalProgress"><div id="globalProgressBar"></div></div>
 <header>
@@ -565,6 +567,9 @@
 <div class="score-number" id="finalScoreNum">0</div>
 <div class="" style="color:var(--gold); font-weight:800; letter-spacing:2px; margin-top:-10px; margin-bottom:20px;">FINAL PERFORMANCE SCORE</div>
 <h2 class="" id="resultTitle" style="font-size:28px; margin-bottom:32px;">Kuis Selesai!</h2>
+<div id="resultScoreImageContainer" style="margin-bottom:32px; display:none; text-align:center;">
+    <img id="resultScoreImage" style="max-width:100%; max-height:280px; border-radius:16px; object-fit:contain; border: 1.5px solid var(--gold-line); background: rgba(0,0,0,0.2); filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));" />
+</div>
 <div id="resultStatsGrid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; margin-bottom:40px;">
 <div class="stat-item">
 <div class="val" id="resCorrect" style="color:var(--green)">0</div>
@@ -1566,12 +1571,233 @@
         else title = "TRAINING REQUIRED 💪";
 
         document.getElementById('resultTitle').textContent = title;
+        
+        // Dynamic score-based images
+        const scoreImages = {
+            100: ['4d3c15e83e1d234c55a3d27b8053d470.png'],
+            95_99: ['0d07b3514f65b8deb38bf6090241c958.png'],
+            88_94: ['03a2145f51e372eb0c010efcce84eb80.png', 'dd4b1782ab30b5713ec0bbc1cd239d82.png'],
+            80_87: ['1524cba7ccaffa7489c3a18bc48408d4.png', 'bdb2b9f7503042d91a273b78327f837b.png'],
+            73_79: ['47c2b1c15a49b5d4153aeeff2e284ce4.png', '66c6d09b1773edab9a95d669bcf257ac.png'],
+            66_72: ['6fcaa1e76a18feba9f8663bd921ec6fd.png'],
+            0_65: ['5730fb737abe561a1fe5c6ccc1dcea38.png']
+        };
+
+        let selectedImage = '';
+        if (score === 100) {
+            selectedImage = scoreImages[100][0];
+        } else if (score >= 95 && score <= 99) {
+            selectedImage = scoreImages[95_99][0];
+        } else if (score >= 88 && score <= 94) {
+            selectedImage = scoreImages[88_94][Math.floor(Math.random() * scoreImages[88_94].length)];
+        } else if (score >= 80 && score <= 87) {
+            selectedImage = scoreImages[80_87][Math.floor(Math.random() * scoreImages[80_87].length)];
+        } else if (score >= 73 && score <= 79) {
+            selectedImage = scoreImages[73_79][Math.floor(Math.random() * scoreImages[73_79].length)];
+        } else if (score >= 66 && score <= 72) {
+            selectedImage = scoreImages[66_72][0];
+        } else {
+            selectedImage = scoreImages[0_65][0];
+        }
+
+        const scoreImgEl = document.getElementById('resultScoreImage');
+        const scoreImgContainer = document.getElementById('resultScoreImageContainer');
+        if (scoreImgEl && scoreImgContainer) {
+            scoreImgEl.src = selectedImage;
+            scoreImgContainer.style.display = 'block';
+        }
+
         document.getElementById('cbtPage').style.display = 'none';
         document.getElementById('resultPage').style.display = 'block';
+        
+        // Trigger animations
+        triggerScoreEffects(score);
+
         clearSession();
         const resumeBtn = document.getElementById('btnResumeQuiz');
         if (resumeBtn) resumeBtn.style.display = 'none';
         buildReviewSection();
+    }
+
+    function triggerScoreEffects(score) {
+        if (score >= 66) {
+            document.getElementById('fireCanvas').style.display = 'none';
+            
+            if (score === 100) {
+                // Perfect: Continuous confetti + Fireworks
+                var duration = 15 * 1000;
+                var animationEnd = Date.now() + duration;
+                var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
+                function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+                
+                var interval = setInterval(function() {
+                    var timeLeft = animationEnd - Date.now();
+                    if (timeLeft <= 0) return clearInterval(interval);
+                    var particleCount = 50 * (timeLeft / duration);
+                    confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                    confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+                }, 250);
+            } else if (score >= 95) {
+                confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, zIndex: 1000 });
+                setTimeout(() => confetti({ particleCount: 200, spread: 120, origin: { y: 0.5 }, zIndex: 1000 }), 300);
+                setTimeout(() => confetti({ particleCount: 150, spread: 80, origin: { y: 0.7 }, zIndex: 1000 }), 600);
+            } else if (score >= 88) {
+                confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 }, zIndex: 1000 });
+                setTimeout(() => confetti({ particleCount: 100, spread: 100, origin: { y: 0.6 }, zIndex: 1000 }), 400);
+            } else if (score >= 80) {
+                confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 }, zIndex: 1000 });
+            } else if (score >= 73) {
+                confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 }, zIndex: 1000 });
+            } else {
+                confetti({ particleCount: 30, spread: 40, origin: { y: 0.6 }, zIndex: 1000 });
+            }
+        } else {
+            // Hell explosion and fire
+            startFireAndExplosion();
+        }
+    }
+
+    function startFireAndExplosion() {
+        const canvas = document.getElementById('fireCanvas');
+        if (!canvas) return;
+        canvas.style.display = 'block';
+        const ctx = canvas.getContext('2d');
+        
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+        
+        const handleResize = () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        };
+        window.addEventListener('resize', handleResize);
+        
+        const particles = [];
+        const explosions = [];
+        
+        // Trigger initial red/orange explosion shockwaves
+        for (let i = 0; i < 6; i++) {
+            explosions.push({
+                x: width / 2 + (Math.random() - 0.5) * (width * 0.6),
+                y: height / 2 + (Math.random() - 0.5) * (height * 0.4),
+                radius: 0,
+                maxRadius: 100 + Math.random() * 200,
+                alpha: 1,
+                speed: 4 + Math.random() * 6
+            });
+        }
+        
+        // Trigger a blast of rising sparks
+        for (let i = 0; i < 100; i++) {
+            particles.push({
+                x: Math.random() * width,
+                y: height + Math.random() * 50,
+                vx: (Math.random() - 0.5) * 4,
+                vy: -Math.random() * 6 - 3,
+                size: Math.random() * 5 + 1.5,
+                life: 1,
+                decay: Math.random() * 0.015 + 0.008,
+                color: `rgba(${220 + Math.floor(Math.random()*35)}, ${60 + Math.floor(Math.random()*100)}, 10, `
+            });
+        }
+
+        let frame = 0;
+        let animationFrameId;
+
+        function animate() {
+            if (document.getElementById('resultPage').style.display === 'none') {
+                canvas.style.display = 'none';
+                window.removeEventListener('resize', handleResize);
+                cancelAnimationFrame(animationFrameId);
+                return; 
+            }
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw background hell red overlay pulse
+            const pulse = 0.08 + Math.sin(frame * 0.06) * 0.04;
+            ctx.fillStyle = `rgba(180, 20, 20, ${pulse})`;
+            ctx.fillRect(0, 0, width, height);
+            
+            // Update and draw explosions
+            for (let i = explosions.length - 1; i >= 0; i--) {
+                const exp = explosions[i];
+                exp.radius += exp.speed;
+                exp.alpha -= 0.02;
+                if (exp.alpha <= 0 || exp.radius >= exp.maxRadius) {
+                    explosions.splice(i, 1);
+                    continue;
+                }
+                
+                // Radial gradient for blast
+                const grad = ctx.createRadialGradient(exp.x, exp.y, exp.radius * 0.1, exp.x, exp.y, exp.radius);
+                grad.addColorStop(0, `rgba(255, 235, 100, ${exp.alpha})`);
+                grad.addColorStop(0.3, `rgba(255, 90, 0, ${exp.alpha * 0.85})`);
+                grad.addColorStop(0.7, `rgba(160, 10, 10, ${exp.alpha * 0.45})`);
+                grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(exp.x, exp.y, exp.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Constantly spawn rising flames from the bottom
+            if (frame % 2 === 0) {
+                for (let i = 0; i < 10; i++) {
+                    particles.push({
+                        x: Math.random() * width,
+                        y: height + 15,
+                        vx: (Math.random() - 0.5) * 3,
+                        vy: -Math.random() * 5 - 2,
+                        size: Math.random() * 35 + 10,
+                        life: 1,
+                        decay: Math.random() * 0.025 + 0.012,
+                        colorType: Math.random()
+                    });
+                }
+            }
+            
+            // Update and draw particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= p.decay;
+                
+                if (p.life <= 0 || p.y < 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+                
+                if (p.size > 8) {
+                    const r = p.size * p.life;
+                    const alpha = p.life * 0.65;
+                    
+                    let color = '';
+                    if (p.colorType < 0.45) {
+                        color = `rgba(255, ${160 + Math.floor(p.life * 95)}, 10, ${alpha})`;
+                    } else if (p.colorType < 0.85) {
+                        color = `rgba(${190 + Math.floor(p.life * 65)}, 30, 20, ${alpha})`;
+                    } else {
+                        color = `rgba(60, 60, 60, ${alpha * 0.65})`;
+                    }
+                    
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    ctx.fillStyle = p.color + p.life + ')';
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            frame++;
+            animationFrameId = requestAnimationFrame(animate);
+        }
+        animate();
     }
 
     function buildReviewSection() {
