@@ -1574,30 +1574,30 @@
         
         // Dynamic score-based images
         const scoreImages = {
-            100: ['4d3c15e83e1d234c55a3d27b8053d470.png'],
-            95_99: ['0d07b3514f65b8deb38bf6090241c958.png'],
-            88_94: ['03a2145f51e372eb0c010efcce84eb80.png', 'dd4b1782ab30b5713ec0bbc1cd239d82.png'],
-            80_87: ['1524cba7ccaffa7489c3a18bc48408d4.png', 'bdb2b9f7503042d91a273b78327f837b.png'],
-            73_79: ['47c2b1c15a49b5d4153aeeff2e284ce4.png', '66c6d09b1773edab9a95d669bcf257ac.png'],
-            66_72: ['6fcaa1e76a18feba9f8663bd921ec6fd.png'],
-            0_65: ['5730fb737abe561a1fe5c6ccc1dcea38.png']
+            "100": ['4d3c15e83e1d234c55a3d27b8053d470.png'],
+            "95_99": ['0d07b3514f65b8deb38bf6090241c958.png'],
+            "88_94": ['03a2145f51e372eb0c010efcce84eb80.png', 'dd4b1782ab30b5713ec0bbc1cd239d82.png'],
+            "80_87": ['1524cba7ccaffa7489c3a18bc48408d4.png', 'bdb2b9f7503042d91a273b78327f837b.png'],
+            "73_79": ['47c2b1c15a49b5d4153aeeff2e284ce4.png', '66c6d09b1773edab9a95d669bcf257ac.png'],
+            "66_72": ['6fcaa1e76a18feba9f8663bd921ec6fd.png'],
+            "0_65": ['5730fb737abe561a1fe5c6ccc1dcea38.png']
         };
 
         let selectedImage = '';
         if (score === 100) {
-            selectedImage = scoreImages[100][0];
+            selectedImage = scoreImages["100"][0];
         } else if (score >= 95 && score <= 99) {
-            selectedImage = scoreImages[95_99][0];
+            selectedImage = scoreImages["95_99"][0];
         } else if (score >= 88 && score <= 94) {
-            selectedImage = scoreImages[88_94][Math.floor(Math.random() * scoreImages[88_94].length)];
+            selectedImage = scoreImages["88_94"][Math.floor(Math.random() * scoreImages["88_94"].length)];
         } else if (score >= 80 && score <= 87) {
-            selectedImage = scoreImages[80_87][Math.floor(Math.random() * scoreImages[80_87].length)];
+            selectedImage = scoreImages["80_87"][Math.floor(Math.random() * scoreImages["80_87"].length)];
         } else if (score >= 73 && score <= 79) {
-            selectedImage = scoreImages[73_79][Math.floor(Math.random() * scoreImages[73_79].length)];
+            selectedImage = scoreImages["73_79"][Math.floor(Math.random() * scoreImages["73_79"].length)];
         } else if (score >= 66 && score <= 72) {
-            selectedImage = scoreImages[66_72][0];
+            selectedImage = scoreImages["66_72"][0];
         } else {
-            selectedImage = scoreImages[0_65][0];
+            selectedImage = scoreImages["0_65"][0];
         }
 
         const scoreImgEl = document.getElementById('resultScoreImage');
