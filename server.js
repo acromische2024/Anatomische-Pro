@@ -43,6 +43,35 @@ app.post('/api/verify', (req, res) => {
   return res.json({ valid: false });
 });
 
+// 1b. Health check endpoint to diagnose Supabase connectivity issues
+app.get('/api/health', async (req, res) => {
+  const status = {
+    supabaseUrlSet: !!supabaseUrl,
+    supabaseKeySet: !!supabaseKey,
+    databaseConnection: false,
+    error: null,
+    datasetCount: 0
+  };
+
+  try {
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Supabase URL or Key environment variables are missing');
+    }
+    // Try a simple count query to check DB connectivity
+    const { count, error } = await supabase
+      .from('datasets')
+      .select('*', { count: 'exact', head: true });
+
+    if (error) throw error;
+    status.databaseConnection = true;
+    status.datasetCount = count || 0;
+  } catch (err) {
+    status.error = err.message;
+  }
+
+  res.json(status);
+});
+
 // 2. Get list of all datasets (name and question count)
 app.get('/api/datasets', async (req, res) => {
   try {
@@ -108,9 +137,9 @@ app.post('/api/upload', verifyAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Empty file contents' });
     }
 
-    const questions = parsed.questions || parsed;
+    const questions = parsed.questions || parsed.cards || parsed;
     if (!Array.isArray(questions)) {
-      return res.status(400).json({ error: 'Invalid document structure: questions must be an array' });
+      return res.status(400).json({ error: 'Invalid document structure: questions/cards must be an array' });
     }
 
     const safeName = path.basename(filename);
@@ -119,7 +148,7 @@ app.post('/api/upload', verifyAdmin, async (req, res) => {
     const { data, error } = await supabase
       .from('datasets')
       .upsert(
-        { name: safeName, count: questions.length, questions: questions },
+        { name: safeName, count: questions.length, questions: parsed },
         { onConflict: 'name' }
       );
 
