@@ -621,6 +621,33 @@
 </div>
 <div id="toast"></div>
 <script>
+    window.onerror = function (message, source, lineno, colno, error) {
+        const errDiv = document.createElement('div');
+        errDiv.style.position = 'fixed';
+        errDiv.style.top = '0';
+        errDiv.style.left = '0';
+        errDiv.style.right = '0';
+        errDiv.style.background = '#ef4444';
+        errDiv.style.color = '#fff';
+        errDiv.style.padding = '24px';
+        errDiv.style.zIndex = '999999';
+        errDiv.style.fontFamily = 'monospace';
+        errDiv.style.fontSize = '14px';
+        errDiv.style.lineHeight = '1.6';
+        errDiv.style.whiteSpace = 'pre-wrap';
+        errDiv.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+        errDiv.innerHTML = `
+            <div style="font-size: 18px; font-weight: 800; margin-bottom: 12px; border-bottom: 2px solid rgba(255,255,255,0.3); padding-bottom: 8px;">🚨 WEBSITE ERROR DETECTED</div>
+            <strong>Message:</strong> ${message}<br>
+            <strong>Source:</strong> ${source}<br>
+            <strong>Line:</strong> ${lineno} (Col: ${colno})<br><br>
+            <strong>Stack Trace:</strong><br>${error ? error.stack : 'N/A'}<br><br>
+            <button onclick="this.parentElement.remove()" style="background:#fff; color:#ef4444; border:none; padding:8px 16px; border-radius:6px; font-weight:800; cursor:pointer;">Dismiss</button>
+        `;
+        document.body.appendChild(errDiv);
+        return false;
+    };
+
     let questionDatabase = {};
     let currentQuiz = [], currentIndex = 0;
     let userAnswers = [], doubtStatus = [], isRevealed = [], visibleHints = [];
