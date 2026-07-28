@@ -499,6 +499,7 @@
 </div>
 </div>
 </div>
+</div>
 <div class="wrapper" id="cbtPage" style="display:none;">
 <div class="cbt-layout">
 <div class="question-panel">
@@ -647,6 +648,34 @@
         document.body.appendChild(errDiv);
         return false;
     };
+
+    window.addEventListener('unhandledrejection', function (event) {
+        const error = event.reason;
+        const message = error ? error.message || error : 'Unhandled Promise Rejection';
+        const stack = error && error.stack ? error.stack : 'N/A';
+        
+        const errDiv = document.createElement('div');
+        errDiv.style.position = 'fixed';
+        errDiv.style.top = '0';
+        errDiv.style.left = '0';
+        errDiv.style.right = '0';
+        errDiv.style.background = '#ef4444';
+        errDiv.style.color = '#fff';
+        errDiv.style.padding = '24px';
+        errDiv.style.zIndex = '999999';
+        errDiv.style.fontFamily = 'monospace';
+        errDiv.style.fontSize = '14px';
+        errDiv.style.lineHeight = '1.6';
+        errDiv.style.whiteSpace = 'pre-wrap';
+        errDiv.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+        errDiv.innerHTML = `
+            <div style="font-size: 18px; font-weight: 800; margin-bottom: 12px; border-bottom: 2px solid rgba(255,255,255,0.3); padding-bottom: 8px;">🚨 WEBSITE UNHANDLED REJECTION DETECTED</div>
+            <strong>Message:</strong> ${message}<br><br>
+            <strong>Stack Trace:</strong><br>${stack}<br><br>
+            <button onclick="this.parentElement.remove()" style="background:#fff; color:#ef4444; border:none; padding:8px 16px; border-radius:6px; font-weight:800; cursor:pointer;">Dismiss</button>
+        `;
+        document.body.appendChild(errDiv);
+    });
 
     let questionDatabase = {};
     let currentQuiz = [], currentIndex = 0;
