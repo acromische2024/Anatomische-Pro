@@ -568,9 +568,10 @@
 <div class="card" style="padding: 40px; margin-bottom: 30px;">
 <div class="score-number" id="finalScoreNum">0</div>
 <div class="" style="color:var(--gold); font-weight:800; letter-spacing:2px; margin-top:-10px; margin-bottom:20px;">FINAL PERFORMANCE SCORE</div>
-<h2 class="" id="resultTitle" style="font-size:28px; margin-bottom:32px;">Kuis Selesai!</h2>
+<h2 class="" id="resultTitle" style="font-size:28px; margin-bottom:12px;">Kuis Selesai!</h2>
+<div id="resultFeedback" style="font-size:15px; color:var(--ink-soft); margin-bottom:28px; line-height:1.6; font-weight: 500; font-style: italic; max-width:600px; margin-left:auto; margin-right:auto; padding: 0 20px;"></div>
 <div id="resultScoreImageContainer" style="margin-bottom:32px; display:none; text-align:center;">
-    <img id="resultScoreImage" style="max-width:100%; max-height:280px; border-radius:16px; object-fit:contain; border: 1.5px solid var(--gold-line); background: rgba(0,0,0,0.2); filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));" />
+    <img id="resultScoreImage" style="max-width:100%; max-height:420px; border-radius:16px; object-fit:contain; border: 1.5px solid var(--gold-line); background: rgba(0,0,0,0.2); filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));" />
 </div>
 <div id="resultStatsGrid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; margin-bottom:40px;">
 <div class="stat-item">
@@ -1710,7 +1711,7 @@
         } else if (score >= 95 && score <= 99) {
             selectedImage = scoreImages["95_99"][0];
         } else if (score >= 88 && score <= 94) {
-            selectedImage = scoreImages["88_94"][Math.floor(Math.random() * scoreImages["88_94"].length)];
+selectedImage = scoreImages["88_94"][Math.floor(Math.random() * scoreImages["88_94"].length)];
         } else if (score >= 80 && score <= 87) {
             selectedImage = scoreImages["80_87"][Math.floor(Math.random() * scoreImages["80_87"].length)];
         } else if (score >= 73 && score <= 79) {
@@ -1719,6 +1720,115 @@
             selectedImage = scoreImages["66_72"][0];
         } else {
             selectedImage = scoreImages["0_65"][0];
+        }
+
+        const scoreFeedbacks = {
+            0: "Skor kamu 0? Tidak apa-apa, mungkin hari ini kamu hanya butuh istirahat. Aku yakin kamu bisa mencoba lagi dengan lebih fokus!",
+            1: "Hanya 1 jawaban benar? Jangan berkecil hati ya, aku tahu materi ini memang sangat menantang. Yuk, kita mulai belajar pelan-pelan.",
+            2: "Mendapat skor 2. Ini barulah langkah awal perjuangan kamu, aku akan selalu ada menemani proses belajarmu sampai paham.",
+            3: "Skor 3 tidak mengartikan kemampuanmu yang sebenarnya. Jangan menyerah sekarang ya, aku yakin usaha kamu berikutnya akan lebih baik.",
+            4: "Mendapat nilai 4, tandanya kamu perlu menutup buku sejenak, tenangkan pikiranmu, lalu mari kita coba lagi besok.",
+            5: "Skor 5? Jangan sedih ya, setidaknya kamu sudah berani mencoba. Aku bangga dengan usahamu untuk memulai!",
+            6: "Mendapat nilai 6. Tidak apa-apa, mari kita evaluasi lagi materi mana yang masih membingungkan bagimu.",
+            7: "Skor 7, jangan biarkan angka ini menurunkan semangat belajarmu. Aku yakin kamu pasti bisa melewatinya.",
+            8: "Mendapat nilai 8. Tenang saja, proses belajar setiap orang berbeda-beda. Tarik napas dalam-dalam dan mari mulai lagi.",
+            9: "Skor 9? Jangan putus asa, jadikan ini sebagai bahan evaluasi untuk belajar lebih giat lagi ya.",
+            10: "Mendapat nilai 10. Aku tahu materi anatomi ini sangat luas dan rumit, jangan ragu untuk mengulanginya dari awal.",
+            11: "Skor kembar 11. Tetap semangat ya, aku percaya ketekunanmu akan membuahkan hasil yang jauh lebih baik nanti.",
+            12: "Mendapat nilai 12. Anggap ini sebagai latihan pemanasan saja. Jangan menyerah, kamu pasti bisa meningkat!",
+            13: "Skor 13? Jangan merasa kecil hati, ini hanya awal dari perjalanan belajarmu. Tetap pertahankan usahamu!",
+            14: "Mendapat nilai 14. Istirahatlah yang cukup terlebih dahulu, lalu mari kita bedah lagi soal-soalnya bersama.",
+            15: "Skor 15. Jangan berkecil hati ya, perjalananmu masih panjang dan kesempatan untuk belajar masih sangat terbuka.",
+            16: "Mendapat nilai 16. Mungkin metode belajarmu perlu sedikit disesuaikan. Mari kita cari tahu cara terbaik untukmu.",
+            17: "Skor 17. Tetap tersenyum ya, kegagalan hari ini adalah pondasi untuk keberhasilanmu di masa depan.",
+            18: "Mendapat nilai 18. Jangan biarkan rasa ragu menghentikan langkahmu. Aku yakin kamu punya potensi lebih dari ini.",
+            19: "Skor 19. Sedikit demi sedikit lama-lama menjadi bukit. Mari kita tambah porsi belajar kita secara konsisten.",
+            20: "Mendapat nilai 20. Tidak apa-apa, yang penting kamu sudah berusaha. Mari kita perbaiki bagian yang masih kurang.",
+            21: "Skor 21. Tarik napas, tenangkan pikiran. Belajar anatomi memang butuh waktu dan kesabaran ekstra.",
+            22: "Mendapat nilai 22. Jangan merasa suram ya, jadikan hasil ini sebagai penyemangat untuk membuktikan kemampuanmu.",
+            23: "Skor 23. Perjalanan akademismu masih panjang. Aku yakin dengan belajar konsisten kamu pasti bisa melaluinya.",
+            24: "Mendapat nilai 24. Evaluasi hasil hari ini dengan kepala dingin. Aku percaya kamu bisa bangkit lagi.",
+            25: "Skor 25. Jangan terlalu keras pada dirimu sendiri. Istirahatlah sejenak dan persiapkan diri untuk mencoba kembali.",
+            26: "Mendapat nilai 26. Setiap kesalahan adalah pelajaran berharga. Mari kita pelajari pembahasannya satu per satu.",
+            27: "Skor 27. Jangan cemas ya, kamu tidak sendirian dalam menghadapi materi sesulit ini. Tetap semangat!",
+            28: "Mendapat nilai 28. Jangan biarkan angka ini membuatmu patah semangat. Aku yakin usahamu berikutnya akan lebih optimal.",
+            29: "Skor 29. Sangat wajar jika merasa kesulitan di awal. Mari kita rapikan kembali catatan belajarmu.",
+            30: "Mendapat nilai 30. Anggap ini sebagai evaluasi awal untuk mengetahui bagian mana yang perlu diperdalam lagi.",
+            31: "Skor 31. Tetap optimis ya, kegagalan kecil ini tidak akan menghentikan impian besar yang sedang kamu kejar.",
+            32: "Mendapat nilai 32. Mungkin kamu sedang lelah saat mengerjakan kuis ini. Tidurlah dulu dan coba lagi saat segar.",
+            33: "Skor 33. Setengah jalan menuju kelulusan sudah di depan mata. Mari kita tingkatkan lagi intensitas belajarmu.",
+            34: "Mendapat nilai 34. Jangan patah arah ya. Aku tahu kamu sudah berusaha, dan usaha itu tidak akan sia-sia.",
+            35: "Skor 35. Mungkin otakmu sedang jenuh menghadapi tumpukan hafalan. Segarkan pikiranmu dulu ya.",
+            36: "Mendapat nilai 36. Jangan biarkan hasil ini membuatmu minder. Kamu pasti bisa melaluinya dengan latihan terus.",
+            37: "Skor 37. Perjalanan belajar memang penuh tantangan, tapi aku yakin kamu memiliki ketahanan untuk melewatinya.",
+            38: "Mendapat nilai 38. Usaha kamu sudah baik, mari kita poles lagi pemahaman teorinya agar lebih matang.",
+            39: "Skor 39. Dikit lagi menyentuh kepala 4! Kamu sudah ada progres, mari kita jaga konsistensi belajar ini.",
+            40: "Mendapat nilai 40. Perjalanan belajarmu sedang berproses. Tetap semangat dan fokus pada perbaikan ya.",
+            41: "Skor 41. Jangan biarkan kepasrahan menguasaimu. Aku tahu kamu bisa mendapatkan nilai yang jauh lebih baik!",
+            42: "Mendapat nilai 42. Setiap tantangan adalah cara untuk tumbuh menjadi lebih pintar. Mari kita hadapi bersama.",
+            43: "Skor 43. Jangan berkecil hati ya, aku yakin pemahamanmu akan semakin tajam dengan sering berlatih soal.",
+            44: "Skor kembar 44. Jangan putus asa, jadikan ini sebagai dorongan untuk belajar lebih fokus lagi.",
+            45: "Mendapat nilai 45. Jangan patah semangat, mari kita jadikan momentum ini untuk belajar lebih giat.",
+            46: "Skor 46. Tidak apa-apa belum sempurna, yang terpenting adalah kamu tidak berhenti mencoba.",
+            47: "Mendapat nilai 47. Fokuslah pada peningkatan kecil setiap harinya, aku yakin hasil besarmu akan mengikuti.",
+            48: "Skor 48. Aku melihat usaha kerasmu dalam menjawab soal-soal ini. Tetap berjuang ya!",
+            49: "Mendapat nilai 49. Selangkah lagi menuju kepala 5! Mari kita perkuat pemahaman konsep dasarnya.",
+            50: "Skor 50. Kamu sudah berhasil menjawab setengahnya dengan benar! Mari kita kejar setengahnya lagi dengan semangat.",
+            51: "Mendapat nilai 51. Kemajuan yang cukup baik, mari kita teruskan latihan ini agar nilaimu semakin meningkat.",
+            52: "Skor 52. Kamu sudah mulai memahami pola soalnya, pertahankan fokusmu untuk kuis berikutnya!",
+            53: "Mendapat nilai 53. Ini adalah bukti kalau kamu sudah mulai terbiasa dengan istilah-istilah anatomi yang rumit.",
+            54: "Skor 54. Tetap semangat belajar ya, batas kelulusan sudah semakin dekat untuk kamu gapai!",
+            55: "Mendapat nilai 55. Usaha yang bagus! Jangan lupa istirahat sejenak sebelum memulai sesi latihan berikutnya.",
+            56: "Skor 56. Ada peningkatan nyata dari latihan sebelumnya. Aku sangat senang melihat perkembanganmu!",
+            57: "Mendapat nilai 57. Tetap tenang dan percaya pada proses belajarmu. Kamu pasti bisa lulus kuis berikutnya.",
+            58: "Skor 58. Sedikit lagi menuju angka aman! Mari kita review kembali soal-soal yang salah bersama-sama.",
+            59: "Mendapat nilai 59. Hanya selisih tipis! Usahamu sudah sangat dekat dengan target kelulusan, jangan menyerah ya!",
+            60: "Skor 60. Kamu sudah menyentuh kepala 6! Pencapaian yang bagus, mari kita dorong sedikit lagi menuju kelulusan.",
+            61: "Mendapat nilai 61. Sangat dekat dengan batas kelulusan. Evaluasi kembali materi yang masih membingungkan ya.",
+            62: "Skor 62. Kamu sudah berjuang dengan sangat baik menghadapi soal-soal jebakan ini. Tetap semangat!",
+            63: "Mendapat nilai 63. Sedikit lagi! Mari kita perkuat bagian-bagian detail anatomi yang sering terlupakan.",
+            64: "Skor 64. Benar-benar tipis sekali dengan kelulusan! Jangan sedih ya, aku yakin di kuis berikutnya kamu pasti lulus!",
+            65: "Skor 65! Selamat ya, kamu berhasil lulus pas-pasan di ambang batas nilai minimal! Perjuangan yang mendebarkan!",
+            66: "Mendapat nilai 66. Kamu berhasil melewati batas kelulusan dengan aman! Kerja bagus!",
+            67: "Skor hoki 67! Angka kelulusan legendaris bagi para mahasiswa! Selamat ya, kamu bebas dari remedial kuis ini!",
+            68: "Mendapat nilai 68. Performa yang solid, kamu membuktikan bahwa kamu mampu bertahan melewati materi sesulit ini.",
+            69: "Skor 69. Nilai yang cukup memuaskan dan aman dari kejaran remedial. Selamat ya!",
+            70: "Skor 70! Batas akhir perjuangan yang manis. Pemahamanmu sudah sangat baik, mari pertahankan performa ini!",
+            71: "Mendapat nilai 71! Selamat atas pencapaianmu, performa belajarmu sudah menunjukkan hasil yang sangat positif!",
+            72: "Skor 72! Luar biasa, pemahaman konsep anatomi kamu sudah sangat kokoh. Teruskan kinerja hebat ini!",
+            73: "Mendapat nilai 73. Kerja kerasmu selama ini benar-benar terbayar dengan hasil yang memuaskan!",
+            74: "Skor 74! Performa yang sangat baik, kamu sudah membuktikan ketekunanmu dalam belajar.",
+            75: "Mendapat nilai 75! Nilai aman dan sangat memuaskan, masa depan akademismu terlihat cerah!",
+            76: "Skor 76! Sangat keren, performa kamu di atas rata-rata kelas. Pertahankan konsistensi ini!",
+            77: "Mendapat nilai hoki 77! Angka keberuntungan yang dibarengi dengan kepintaran nyata. Selamat!",
+            78: "Skor 78! Otak kamu bekerja dengan sangat baik dalam menganalisis soal-soal sulit ini.",
+            79: "Mendapat nilai 79! Selangkah lagi menuju kepala 8, performa yang sangat impresif!",
+            80: "Skor 80! Keren sekali, kamu sudah menunjukkan kemampuan analisis klinis yang sangat tajam!",
+            81: "Mendapat nilai 81! Nilai yang sangat indah, kamu layak bangga dengan hasil belajar kerasmu!",
+            82: "Skor 82! Luar biasa presisi dalam menjawab setiap soal. Pertahankan prestasi gemilang ini!",
+            83: "Mendapat nilai 83! Kamu sudah berada di level pemahaman yang sangat tinggi, hebat sekali!",
+            84: "Skor 84! Performa yang menakjubkan, kamu berhasil menguasai materi yang sangat rumit ini dengan baik.",
+            85: "Mendapat nilai 85! Sangat berprestasi, nilai yang sangat elit dan membanggakan!",
+            86: "Skor 86! Luar biasa tertata rapi pola pemikiran klinismu dalam memecahkan soal kuis.",
+            87: "Mendapat nilai 87! Kamu telah membuktikan bahwa dedikasi belajarmu membuahkan hasil yang luar biasa.",
+            88: "Skor hoki kembar 88! Kemampuan analisismu benar-benar tidak terbatas dan sangat solid!",
+            89: "Skor 89! Sangat mengagumkan, tingkat ketelitianmu dalam kuis ini patut diacungi dua jempol!",
+            90: "Skor 90! Kategori Elit! Nilai A mutlak sudah berada di genggaman tanganmu. Selamat!",
+            91: "Mendapat nilai 91! Hasil yang luar biasa memuaskan, dosen penguji pasti sangat bangga melihat lembar jawabanmu.",
+            92: "Skor 92! Kamu benar-benar menguasai seluk-beluk materi anatomi ini layaknya seorang ahli.",
+            93: "Mendapat nilai 93! Performa luar biasa di atas rata-rata, dedikasimu sangat menginspirasi!",
+            94: "Skor 94! Analisis dan logika berpikir klinismu berjalan sangat presisi dan mengagumkan.",
+            95: "Mendapat nilai 95! Skor yang sangat tinggi dan luar biasa spektakuler, selamat atas kerja kerasmu!",
+            96: "Skor 96! Sangat menakjubkan, pemahamanmu terhadap teori dan visual anatomi sudah sangat matang.",
+            97: "Mendapat nilai 97! Hampir sempurna! Hanya tersisa sedikit celah kecil yang tidak menghalangi kehebatanmu.",
+            98: "Skor 98! Benar-benar luar biasa, kemampuan analisismu sudah berada di level dewa!",
+            99: "Skor 99! Kesempurnaan yang luar biasa! Kamu adalah MVP akademis sejati untuk kuis ini!",
+            100: "SKOR 100 SEMPURNA! Selamat, kamu berhasil menjawab seluruh soal tanpa celah! Pemimpin sejati di bidang akademis!"
+        };
+
+        const feedbackEl = document.getElementById('resultFeedback');
+        if (feedbackEl) {
+            feedbackEl.textContent = scoreFeedbacks[score] || "Kerja bagus! Teruskan perjuanganmu belajar anatomi!";
         }
 
         const scoreImgEl = document.getElementById('resultScoreImage');
@@ -1733,7 +1843,7 @@
         
         // Trigger animations
         triggerScoreEffects(score);
-
+        
         clearSession();
         const resumeBtn = document.getElementById('btnResumeQuiz');
         if (resumeBtn) resumeBtn.style.display = 'none';
