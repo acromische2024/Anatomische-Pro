@@ -1320,7 +1320,6 @@
         isRevealed = new Array(pool.length).fill(false);
         visibleHints = new Array(pool.length).fill(0);
         currentIndex = 0;
-        document.getElementById('qTotalDisplay').textContent = String(pool.length).padStart(2, '0');
         document.getElementById('headerSubtitle').textContent = `LATIHAN LANGSUNG: ${pool.length} SOAL`;
         document.getElementById('btnBackHome').style.display = 'inline-flex';
         document.getElementById('setupPage').style.display = 'none';
@@ -2295,7 +2294,6 @@ selectedImage = scoreImages["88_94"][Math.floor(Math.random() * scoreImages["88_
                 : new Array(currentQuiz.length).fill(0);
 
             // Transition to CBT Page
-            document.getElementById('qTotalDisplay').textContent = String(currentQuiz.length).padStart(2, '0');
             document.getElementById('headerSubtitle').textContent = `LATIHAN LANGSUNG: ${currentQuiz.length} SOAL`;
             document.getElementById('btnBackHome').style.display = 'inline-flex';
             document.getElementById('setupPage').style.display = 'none';
