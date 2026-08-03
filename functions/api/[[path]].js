@@ -49,6 +49,27 @@ export async function onRequest(context) {
             return jsonResponse({ valid: password === adminPassword });
         }
         
+        if (path === '/api/health' && method === 'GET') {
+            const status = {
+                supabaseUrlSet: !!supabaseUrl,
+                supabaseKeySet: !!supabaseKey,
+                databaseConnection: false,
+                error: null,
+                datasetCount: 0
+            };
+            try {
+                const { count, error } = await supabase
+                    .from('datasets')
+                    .select('*', { count: 'exact', head: true });
+                if (error) throw error;
+                status.databaseConnection = true;
+                status.datasetCount = count || 0;
+            } catch (err) {
+                status.error = err.message;
+            }
+            return jsonResponse(status);
+        }
+        
         if (path === '/api/datasets' && method === 'GET') {
             const { data, error } = await supabase
                 .from('datasets')
