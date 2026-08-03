@@ -10,32 +10,34 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
         :root {
-            /* Black & Gold Theme Variables */
-            --bg-deep:     #0a0a0a;
-            --bg-card:     rgba(26, 26, 26, 0.8);
+            /* Premium Dark Medical Theme Variables */
+            --bg-deep:     #0B0C10;
+            --bg-card:     #1A1D29;
             
-            --gold:        #D4AF37;
+            --gold:        #D4A843;
             --gold-dark:   #B8860B;
-            --gold-line:   rgba(184, 134, 11, 0.3);
-            --gold-soft:   rgba(212, 175, 55, 0.15);
+            --gold-line:   rgba(212, 168, 67, 0.15);
+            --gold-soft:   rgba(212, 168, 67, 0.08);
+            --amber-accent: #F0C75E;
 
-            --ink:         #ffffff;
-            --ink-soft:    #a1a1aa;
-            --ink-faint:   #52525b;
+            --ink:         #FFFFFF;
+            --ink-soft:    #A1A1AA;
+            --ink-faint:   #52525B;
+            --slate-200:   #E2E8F0;
+            --slate-300:   #CBD5E1;
 
-            --accent:      #D4AF37;
-            --accent-2:    #B8860B;
-            
-            --green:       #10b981;
-            --red:         #991b1b;
-            --red-bg:      rgba(153, 27, 27, 0.2);
+            --green:       #10B981;
+            --red:         #EF4444;
+            --red-bg:      rgba(239, 68, 68, 0.15);
 
-            --glass-border: rgba(184, 134, 11, 0.2);
+            --glass-border: rgba(212, 168, 67, 0.15);
             --radius:      16px;
             --radius-lg:   24px;
             
-            --shadow-lg:   0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            --shadow-lg:   0 4px 24px rgba(0, 0, 0, 0.4);
             --ease-out:    cubic-bezier(.16,1,.3,1);
             --spacing-md:  24px;
             --spacing-lg:  32px;
@@ -45,7 +47,7 @@
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Inter', sans-serif;
             color: var(--ink);
             min-height: 100vh;
             line-height: 1.6;
@@ -211,8 +213,15 @@
             .sidebar { width: 100% !important; position: relative !important; top: 0 !important; }
         }
 
-        .question-panel { flex: 1; min-width: 0; }
-        .sidebar { width: 300px; flex-shrink: 0; position: sticky; top: var(--spacing-md); }
+        .question-panel { width: 65%; flex-grow: 0; flex-shrink: 0; min-width: 0; }
+        .sidebar { width: 35%; flex-shrink: 0; position: sticky; top: var(--spacing-md); }
+
+        .question-panel .card {
+            border-left: 4px solid var(--gold) !important;
+            border-radius: 16px !important;
+            background: var(--bg-card);
+            border: 1px solid var(--gold-line);
+        }
 
         .q-meta { display: flex; align-items: center; gap: 16px; margin-bottom: var(--spacing-lg); }
         .q-number { font-size: 32px; font-weight: 800; color: var(--gold); line-height: 1; }
@@ -222,9 +231,9 @@
 
         .question-text {
             font-size: 18px; line-height: 1.8; color: var(--ink);
-            font-weight: 600; margin-bottom: var(--spacing-lg);
-            padding: var(--spacing-md); background: rgba(255,255,255,0.03);
-            border-radius: var(--radius); border-left: 4px solid var(--gold);
+            font-weight: 700; margin-bottom: var(--spacing-lg);
+            padding: 0; background: transparent;
+            border-radius: 0; border: none;
         }
 
         .guess-input {
@@ -237,21 +246,21 @@
 
         .option-label {
             display: flex; align-items: center; gap: 16px;
-            padding: 16px 20px; border-radius: var(--radius);
-            border: 2px solid var(--gold-line); background: rgba(255,255,255,0.02);
+            padding: 16px 20px; border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.08); background: #16181F;
             cursor: pointer; transition: all 0.2s; font-size: 15px; font-weight: 500;
-            color: var(--ink-soft); margin-bottom: 12px;
+            color: var(--slate-300); margin-bottom: 12px;
         }
-        .option-label:hover:not(.locked) { border-color: var(--gold); background: var(--gold-soft); color: #fff; transform: translateX(5px); }
-        .option-label.selected { border-color: var(--gold); background: var(--gold-soft); color: #fff; }
-        .option-label.correct-ans { border-color: var(--green); background: rgba(16, 185, 129, 0.1); color: #fff; }
-        .option-label.wrong-ans { border-color: #ef4444; background: rgba(239, 68, 68, 0.1); color: #fff; }
+        .option-label:hover:not(.locked) { border-color: var(--amber-accent); background: #1c1f28; color: #fff; }
+        .option-label.selected { border: 2px solid var(--gold) !important; background: var(--gold-soft); color: #fff; box-shadow: 0 0 12px rgba(212, 168, 67, 0.15); }
+        .option-label.correct-ans { border: 2px solid var(--green) !important; background: rgba(16, 185, 129, 0.1); color: #fff; }
+        .option-label.wrong-ans { border: 2px solid var(--red) !important; background: rgba(239, 68, 68, 0.1); color: #fff; }
         
         .option-bubble {
-            width: 32px; height: 32px; border-radius: 8px;
-            border: 2px solid var(--gold-line); display: flex;
+            width: 32px; height: 32px; border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.12); display: flex;
             align-items: center; justify-content: center;
-            font-size: 14px; font-weight: 800; transition: 0.2s;
+            font-size: 14px; font-weight: 800; background: rgba(255,255,255,0.03); color: var(--slate-300); transition: all 0.2s;
         }
         .option-label.selected .option-bubble { background: var(--gold); color: #000; border-color: var(--gold); }
 
@@ -268,15 +277,36 @@
         .nav-box {
             aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
             border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 800;
-            border: 1px solid var(--gold-line); background: rgba(255,255,255,0.02);
-            color: var(--ink-faint); transition: 0.2s;
+            border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02);
+            color: var(--ink-faint); transition: all 0.2s;
         }
         .nav-box:hover { border-color: var(--gold); color: var(--gold); }
-        .nav-box.active { border-color: var(--gold); background: var(--gold); color: #000; }
-        .nav-box.answered { border-color: var(--gold-dark); color: var(--gold-dark); }
-        .nav-box.correct { border-color: var(--green); color: var(--green); background: rgba(16, 185, 129, 0.1); }
-        .nav-box.wrong { border-color: #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.1); }
-        .nav-box.doubt { border-color: #f59e0b; color: #f59e0b; }
+        .nav-box.active {
+            border: 2px solid var(--amber-accent) !important; 
+            box-shadow: 0 0 10px var(--amber-accent) !important; 
+            color: var(--amber-accent) !important; 
+            background: rgba(255,255,255,0.02) !important;
+        }
+        .nav-box.answered { 
+            background: var(--green) !important; 
+            color: #000 !important; 
+            border-color: var(--green) !important; 
+        }
+        .nav-box.correct { 
+            background: var(--green) !important; 
+            color: #000 !important; 
+            border-color: var(--green) !important; 
+        }
+        .nav-box.wrong { 
+            background: var(--red) !important; 
+            color: #fff !important; 
+            border-color: var(--red) !important; 
+        }
+        .nav-box.doubt { 
+            background: var(--amber-accent) !important; 
+            color: #000 !important; 
+            border-color: var(--amber-accent) !important; 
+        }
 
         .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         .stat-item { background: rgba(255,255,255,0.02); border: 1px solid var(--gold-line); border-radius: 12px; padding: 12px 4px; text-align: center; }
@@ -447,19 +477,16 @@
 <div class="card" id="imporDataCard">
 <div class="card-title"><div class="step-badge">1</div> IMPOR DATA</div>
 <!-- User / Locked State -->
-<div id="uploadLockedState" style="text-align: center; padding: 24px 12px; border: 1px solid var(--gold-line); border-radius: var(--radius); background: rgba(255,255,255,0.01);">
-    <div style="font-size: 36px; margin-bottom: 12px; filter: grayscale(1) sepia(1) saturate(5) hue-rotate(-10deg);">🔒</div>
-    <p style="font-size: 13px; color: var(--ink-soft); margin-bottom: 16px;">Hanya administrator yang dapat mengunggah soal latihan.</p>
-    <button class="btn btn-ghost btn-full" onclick="openAdminLoginModal()" style="font-size: 11px; padding: 10px;">
-        🔑 Masuk Mode Admin
-    </button>
+<div id="uploadLockedState" style="text-align: center; padding: 32px 16px; border: 1px dashed rgba(255,255,255,0.08); border-radius: var(--radius); background: rgba(255,255,255,0.01); color: var(--ink-soft);">
+    <div style="font-size: 28px; margin-bottom: 12px; opacity: 0.5;">🔒</div>
+    <p style="font-size: 13px; line-height: 1.5; color: var(--ink-soft);">Hanya administrator yang dapat mengunggah soal</p>
 </div>
 <!-- Admin / Unlocked State -->
 <div id="uploadUnlockedState" style="display: none;">
     <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInputSetup').click()">
         <input accept=".json, .yaml, .yml" id="fileInputSetup" onchange="handleFileSelect(this)" type="file"/>
         <div class="upload-icon">📁</div>
-        <p class=""><strong>Klik untuk eksplorasi file</strong><br/>Format JSON &amp; YAML terverifikasi</p>
+        <p class=""><strong>Klik atau seret file JSON/YAML ke sini</strong></p>
     </div>
     <div style="margin-top: 16px; text-align: left;">
         <label style="font-size: 11px; color: var(--gold); font-weight: 800; display: block; margin-bottom: 6px; letter-spacing: 0.5px; text-transform: uppercase;">Folder Tujuan (Opsional)</label>
@@ -468,7 +495,7 @@
     </div>
     <div style="margin-top:20px;">
         <button class="btn btn-primary btn-full" onclick="document.getElementById('fileInputSetup').click()">
-            ＋ Tambahkan Dataset
+            ＋ TAMBAHKAN DATASET
         </button>
     </div>
 </div>
@@ -480,85 +507,83 @@
 <ul class="file-list" id="databaseList">
 <div class="" style="text-align:center; padding:20px; color:var(--ink-faint); font-size:13px;">Belum ada dataset yang diunggah</div>
 </ul>
-<label class="toggle-field">
-<input checked="" id="shuffleQuestions" type="checkbox"/>
-                Randomize Question Order
-            </label>
-<div style="margin-top: 16px; display: flex; align-items: center; justify-content: space-between; font-size: 14px; color: var(--ink-soft); font-weight: 600;">
-    <span>Jumlah Soal</span>
-    <input type="number" id="maxQuestions" min="1" placeholder="Semua Soal" style="background: var(--bg-deep); color: var(--gold); border: 1px solid var(--gold-line); border-radius: 8px; padding: 6px 12px; font-family: inherit; font-size: 13px; font-weight: 700; outline: none; width: 120px; text-align: center; transition: all 0.2s;" />
-</div>
-<hr class="divider"/>
-<div style="display:flex; gap:12px; flex-direction:column;">
-<button class="btn btn-primary btn-full" onclick="startQuiz()">
-                    ▶ MULAI TRAINING
-                </button>
-<button class="btn btn-danger btn-full" id="btnClearDbBtn" onclick="confirmClearDB()" style="font-size:11px; padding:8px; display:none;">
-                    🗑 BERSIHKAN SEMUA DATA
-                </button>
-</div>
-</div>
+        <label class="toggle-field">
+            <input checked="" id="shuffleQuestions" type="checkbox"/>
+            Acak Urutan Soal
+        </label>
+        <div style="margin-top: 16px; display: flex; align-items: center; justify-content: space-between; font-size: 14px; color: var(--ink-soft); font-weight: 600;">
+            <span>Jumlah Soal</span>
+            <input type="number" id="maxQuestions" min="1" placeholder="Semua Soal" style="background: var(--bg-deep); color: var(--gold); border: 1px solid var(--gold-line); border-radius: 8px; padding: 6px 12px; font-family: inherit; font-size: 13px; font-weight: 700; outline: none; width: 120px; text-align: center; transition: all 0.2s;" />
+        </div>
+        <hr class="divider"/>
+        <div style="display:flex; gap:12px; flex-direction:column;">
+            <button class="btn btn-primary btn-full" onclick="startQuiz()">
+                ▶ MULAI TRAINING
+            </button>
+            <button class="btn btn-danger btn-full" id="btnClearDbBtn" onclick="confirmClearDB()" style="font-size:11px; padding:8px; display:none; background:transparent; border: 1px solid var(--red); color: var(--red); border-radius: 8px;">
+                🗑 Bersihkan Semua Data
+            </button>
+        </div>
+    </div>
 </div>
 </div>
 <div class="wrapper" id="cbtPage" style="display:none;">
 <div class="cbt-layout">
 <div class="question-panel">
 <div class="card">
-<div class="q-meta">
-<div class="q-number">
-<span class="" id="qNumDisplay">01</span><span class="">/ <span class="" id="qTotalDisplay">10</span></span>
-</div>
-<div class="q-progress-bar">
-<div class="q-progress-fill" id="qProgressFill"></div>
-</div>
-</div>
-<div id="questionMetadataContainer" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom: 20px;"></div>
-<div id="questionImageContainer" style="display:none; text-align:center; margin-bottom:20px;"></div>
-<div class="question-text" id="questionText"></div>
-<!-- Hint/Guess Mode -->
-<div id="hintModeContainer" style="display:none;">
-<div id="hintList" style="margin-bottom:20px; display:flex; flex-direction:column; gap:10px;"></div>
-<input autocomplete="off" class="guess-input" id="guessInputField" placeholder="Ketik jawaban Anda..." type="text"/>
-</div>
-<!-- MCQ Mode -->
-<div class="options" id="optionsContainer"></div>
-<div id="pembahasanBox" style="display:none;"></div>
-<div style="display:flex; align-items:center; justify-content:space-between; margin-top:32px; padding-top:24px; border-top:1px solid var(--gold-line);">
-<button class="btn btn-ghost" id="btnPrev" onclick="navigateQuestion(-1)">← BACK</button>
-<div style="display:flex; gap:8px;">
-<button class="btn btn-outline-accent" id="btnMintaHint" onclick="revealNextHint()" style="display:none;">💡 HINT</button>
-<button class="btn btn-primary" id="btnCekJawaban" onclick="cekJawabanSekarang()">CHECK JAWABAN</button>
-</div>
-<label class="doubt-toggle" id="doubtToggle">
-<input id="checkDoubt" onchange="toggleDoubt()" style="display:none;" type="checkbox"/>
-<div class="doubt-indicator"></div> RAGU
-                    </label>
-<button class="btn btn-primary" id="btnNext" onclick="navigateQuestion(1)">NEXT →</button>
-</div>
+    <div class="progress-container" style="margin-bottom: 24px;">
+        <div id="qNumDisplayLarge" style="font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 10px;">Soal 1 dari 10</div>
+        <div class="q-progress-bar" style="height: 8px; background: rgba(255,255,255,0.05); border-radius: 99px; overflow: hidden; position: relative;">
+            <div class="q-progress-fill" id="qProgressFill" style="height: 100%; background: var(--gold); border-radius: 99px; box-shadow: 0 0 10px var(--gold); width: 0%; transition: width 0.3s var(--ease-out);"></div>
+        </div>
+    </div>
+    <div id="questionMetadataContainer" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom: 20px;"></div>
+    <div id="questionImageContainer" style="display:none; text-align:center; margin-bottom:20px;"></div>
+    <div class="question-text" id="questionText"></div>
+    <!-- Hint/Guess Mode -->
+    <div id="hintModeContainer" style="display:none;">
+        <div id="hintList" style="margin-bottom:20px; display:flex; flex-direction:column; gap:10px;"></div>
+        <input autocomplete="off" class="guess-input" id="guessInputField" placeholder="Ketik jawaban Anda..." type="text"/>
+    </div>
+    <!-- MCQ Mode -->
+    <div class="options" id="optionsContainer"></div>
+    <div id="pembahasanBox" style="display:none;"></div>
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-top:32px; padding-top:24px; border-top:1px solid var(--gold-line);">
+        <button class="btn btn-ghost" id="btnPrev" onclick="navigateQuestion(-1)">← Sebelumnya</button>
+        <div style="display:flex; gap:8px; align-items:center;">
+            <button class="btn btn-outline-accent" id="btnMintaHint" onclick="revealNextHint()" style="display:none;">💡 HINT</button>
+            <button class="btn btn-primary" id="btnCekJawaban" onclick="cekJawabanSekarang()" style="display:none;">CHECK JAWABAN</button>
+            <label class="btn btn-ghost doubt-toggle" id="doubtToggle" style="margin:0; padding:10px 16px; display:inline-flex; align-items:center; gap:8px; border:1px solid var(--gold-line); border-radius:12px; background:rgba(255,255,255,0.03); color:var(--ink-soft); cursor:pointer;">
+                <input id="checkDoubt" onchange="toggleDoubt()" style="display:none;" type="checkbox"/>
+                Tandai Ragu ⭐
+            </label>
+        </div>
+        <button class="btn btn-primary" id="btnNext" onclick="navigateQuestion(1)">Selanjutnya →</button>
+    </div>
 </div>
 </div>
 <div class="sidebar">
 <div class="card" style="padding: 20px;">
-<div class="" style="font-size:11px; color:var(--gold); font-weight:800; letter-spacing:1.5px; margin-bottom:16px;">LIVE STATISTICS</div>
-<div class="stats-bar">
-<div class="stat-item">
-<div class="stat-value" id="statAnswered">0</div>
-<div class="stat-label">DONE</div>
-</div>
-<div class="stat-item">
-<div class="stat-value" id="statDoubt" style="color:#f59e0b">0</div>
-<div class="stat-label">DOUBT</div>
-</div>
-<div class="stat-item">
-<div class="stat-value" id="statEmpty" style="color:var(--ink-faint)">0</div>
-<div class="stat-label">EMPTY</div>
-</div>
-</div>
-<hr class="divider"/>
-<div class="" style="font-size:11px; color:var(--gold); font-weight:800; letter-spacing:1.5px; margin-bottom:12px;">NAVIGATION</div>
-<div class="nav-grid" id="navGrid"></div>
-<hr class="divider"/>
-<button class="btn btn-danger btn-full" onclick="openFinishModal()">🏁 SELESAIKAN &amp; SUBMIT</button>
+    <div class="" style="font-size:11px; color:var(--gold); font-weight:800; letter-spacing:1.5px; margin-bottom:16px;">STATISTIK LANGSUNG</div>
+    <div class="stats-bar">
+        <div class="stat-item" style="border-color: rgba(16, 185, 129, 0.2); background: rgba(16, 185, 129, 0.02);">
+            <div class="stat-value" id="statAnswered" style="color:var(--green)">0</div>
+            <div class="stat-label" style="color:var(--green)">SUDAH</div>
+        </div>
+        <div class="stat-item" style="border-color: rgba(240, 199, 94, 0.2); background: rgba(240, 199, 94, 0.02);">
+            <div class="stat-value" id="statDoubt" style="color:var(--amber-accent)">0</div>
+            <div class="stat-label" style="color:var(--amber-accent)">RAGU</div>
+        </div>
+        <div class="stat-item" style="border-color: rgba(255,255,255,0.05); background: rgba(255,255,255,0.01);">
+            <div class="stat-value" id="statEmpty" style="color:var(--ink-soft)">0</div>
+            <div class="stat-label" style="color:var(--ink-soft)">BELUM</div>
+        </div>
+    </div>
+    <hr class="divider"/>
+    <div class="" style="font-size:11px; color:var(--gold); font-weight:800; letter-spacing:1.5px; margin-bottom:12px;">NAVIGASI SOAL</div>
+    <div class="nav-grid" id="navGrid"></div>
+    <hr class="divider"/>
+    <button class="btn btn-primary btn-full" onclick="openFinishModal()" style="font-weight:800; border-radius:12px; background:#D4A843; color:#000; box-shadow:0 4px 15px rgba(212,168,67,0.4);">🏁 SELESAIKAN &amp; SUBMIT</button>
 </div>
 </div>
 </div>
@@ -846,7 +871,7 @@
                 const data = await res.json();
                 if (data.valid) {
                     isAdminMode = true;
-                    btnAdmin.innerHTML = '🔓 ADMIN ACTIVE';
+                    btnAdmin.innerHTML = '🔑 ADMIN MODE';
                     btnAdmin.style.background = 'var(--gold-soft)';
                     btnAdmin.style.borderColor = 'var(--gold)';
                     if (lockedCard) lockedCard.style.display = 'none';
@@ -1102,25 +1127,29 @@
                 
                 const sessions = getSessions();
                 const hasSavedProgress = !!sessions[name];
-                let progressBtn = '';
+                let answeredCount = 0;
                 if (hasSavedProgress) {
                     const s = sessions[name];
-                    const answered = s.userAnswers ? s.userAnswers.filter(a => a !== null && a !== '').length : 0;
-                    const total = s.currentQuiz.length;
+                    answeredCount = s.userAnswers ? s.userAnswers.filter(a => a !== null && a !== '').length : 0;
+                }
+                const progressText = `<span style="font-size: 11px; color: var(--ink-soft); margin-left: 8px; flex-shrink: 0; font-weight: 600; text-transform: uppercase;">PROGRES: ${answeredCount}/${count}</span>`;
+                
+                let progressBtn = '';
+                if (hasSavedProgress) {
                     progressBtn = `
                         <span onclick="loadSessionByKey('${escHtml(name)}')" style="display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; background: var(--gold-soft); border: 1px solid var(--gold); color: var(--gold); cursor: pointer; margin-left: 8px; font-family: inherit; flex-shrink: 0;" title="Lanjutkan Progress">
-                            ↩️ RESUME (${answered}/${total})
+                            ↩️ RESUME
                         </span>
                     `;
                 }
 
                 const deleteBtn = isAdminMode ? `
-                    <button class="btn btn-danger" onclick="deleteDataset('${escHtml(name)}')" style="padding: 4px 8px; font-size: 11px; margin-left: 8px; border-radius: 6px; flex-shrink: 0;">
+                    <button class="btn btn-danger" onclick="deleteDataset('${escHtml(name)}')" style="padding: 4px 8px; font-size: 11px; margin-left: 8px; border-radius: 6px; flex-shrink: 0; background: transparent; border: 1px solid var(--red); color: var(--red);">
                         🗑
                     </button>
                 ` : '';
                 const shareBtn = isAdminMode ? `
-                    <button class="btn btn-ghost" onclick="copyShareLink('${escHtml(name)}')" style="padding: 4px 8px; font-size: 11px; margin-left: 8px; border-radius: 6px; border-color: var(--gold-line); flex-shrink: 0;" title="Salin Link Share">
+                    <button class="btn btn-ghost" onclick="copyShareLink('${escHtml(name)}')" style="padding: 4px 8px; font-size: 11px; margin-left: 8px; border-radius: 6px; border-color: var(--gold-line); flex-shrink: 0; color: var(--gold); background: transparent;" title="Salin Link Share">
                         🔗
                     </button>
                 ` : '';
@@ -1129,7 +1158,8 @@
                 <li class="file-item" style="display: flex; align-items: center; width: 100%;">
                     <input type="checkbox" value="${escHtml(name)}" class="db-checkbox" id="cb_${globalCheckboxIdx}" checked style="flex-shrink: 0;">
                     <label for="cb_${globalCheckboxIdx}" style="margin-left: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;">${escHtml(displayName)}</label>
-                    <span class="badge" style="flex-shrink: 0; margin-left: 8px;">${count} PRO</span>
+                    <span class="badge" style="flex-shrink: 0; margin-left: 8px; border: 1.5px solid var(--gold); color: var(--gold); background: transparent; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">${count} PRO</span>
+                    ${progressText}
                     ${progressBtn}
                     ${shareBtn}
                     ${deleteBtn}
@@ -1291,7 +1321,7 @@
         visibleHints = new Array(pool.length).fill(0);
         currentIndex = 0;
         document.getElementById('qTotalDisplay').textContent = String(pool.length).padStart(2, '0');
-        document.getElementById('headerSubtitle').textContent = `LIVE TRAINING: ${pool.length} ITEMS`;
+        document.getElementById('headerSubtitle').textContent = `LATIHAN LANGSUNG: ${pool.length} SOAL`;
         document.getElementById('btnBackHome').style.display = 'inline-flex';
         document.getElementById('setupPage').style.display = 'none';
         document.getElementById('cbtPage').style.display = 'block';
@@ -1365,7 +1395,10 @@
         const kunciJawaban = q.jawaban_benar || q.answer || '';
         const isHintMode = !q.pilihan || q.pilihan.length === 0;
 
-        document.getElementById('qNumDisplay').textContent = String(idx + 1).padStart(2, '0');
+        const numDisplay = document.getElementById('qNumDisplayLarge');
+        if (numDisplay) {
+            numDisplay.textContent = `Soal ${idx + 1} dari ${total}`;
+        }
         document.getElementById('qProgressFill').style.width = ((idx + 1) / total * 100) + '%';
         document.getElementById('globalProgressBar').style.width = ((idx + 1) / total * 100) + '%';
 
@@ -1445,7 +1478,41 @@
             }
         }
 
-        qTextEl.innerHTML = q.pertanyaan || q.question || (isHintMode ? "Identifikasi objek berdasarkan petunjuk strategis berikut:" : "");
+        let rawText = q.pertanyaan || q.question || (isHintMode ? "Identifikasi objek berdasarkan petunjuk strategis berikut:" : "");
+        let vignette = "";
+        let questionPart = "";
+        
+        const splitKeywords = ["Pertanyaan:", "Pertanyaan :", "Pertanyaan\n", "Pertanyaan \n"];
+        let splitIdx = -1;
+        let chosenKeyword = "";
+        for (let kw of splitKeywords) {
+            const idxOf = rawText.indexOf(kw);
+            if (idxOf !== -1) {
+                splitIdx = idxOf;
+                chosenKeyword = kw;
+                break;
+            }
+        }
+        
+        if (splitIdx !== -1) {
+            vignette = rawText.substring(0, splitIdx).trim();
+            questionPart = rawText.substring(splitIdx + chosenKeyword.length).trim();
+        } else {
+            questionPart = rawText;
+        }
+
+        let questionHtml = '';
+        if (vignette) {
+            questionHtml = `
+                <div class="vignette-text" style="font-size: 16px; line-height: 1.8; color: var(--slate-200); margin-bottom: 24px; font-weight: 400;">${vignette}</div>
+                <div class="question-title" style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 16px; border-top: 1px solid var(--gold-line); padding-top: 16px;">${questionPart}</div>
+            `;
+        } else {
+            questionHtml = `
+                <div class="question-title" style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 16px;">${questionPart}</div>
+            `;
+        }
+        qTextEl.innerHTML = questionHtml;
         optionsContainer.innerHTML = '';
         hintList.innerHTML = '';
         
@@ -1627,14 +1694,28 @@
             const box = document.getElementById(`nb_${i}`);
             if (!box) continue;
             box.className = 'nav-box';
-            if (i === currentIndex) box.classList.add('active');
-            else if (doubtStatus[i]) box.classList.add('doubt');
-            else if (userAnswers[i] !== null && userAnswers[i] !== '') {
+            let inner = `${i + 1}`;
+            
+            if (i === currentIndex) {
+                box.classList.add('active');
+            } else if (doubtStatus[i]) {
+                box.classList.add('doubt');
+                inner = `${i + 1} <span style="font-size: 9px; margin-left: 2px;">★</span>`;
+            } else if (userAnswers[i] !== null && userAnswers[i] !== '') {
                 if (isRevealed[i]) {
-                    if (checkIsCorrect(userAnswers[i], currentQuiz[i])) box.classList.add('correct');
-                    else box.classList.add('wrong');
-                } else box.classList.add('answered');
+                    if (checkIsCorrect(userAnswers[i], currentQuiz[i])) {
+                        box.classList.add('correct');
+                        inner = `${i + 1} <span style="font-size: 9px; margin-left: 2px;">✓</span>`;
+                    } else {
+                        box.classList.add('wrong');
+                        inner = `${i + 1} <span style="font-size: 9px; margin-left: 2px;">✗</span>`;
+                    }
+                } else {
+                    box.classList.add('answered');
+                    inner = `${i + 1} <span style="font-size: 9px; margin-left: 2px;">✓</span>`;
+                }
             }
+            box.innerHTML = inner;
         }
     }
 
@@ -2215,7 +2296,7 @@ selectedImage = scoreImages["88_94"][Math.floor(Math.random() * scoreImages["88_
 
             // Transition to CBT Page
             document.getElementById('qTotalDisplay').textContent = String(currentQuiz.length).padStart(2, '0');
-            document.getElementById('headerSubtitle').textContent = `LIVE TRAINING: ${currentQuiz.length} ITEMS`;
+            document.getElementById('headerSubtitle').textContent = `LATIHAN LANGSUNG: ${currentQuiz.length} SOAL`;
             document.getElementById('btnBackHome').style.display = 'inline-flex';
             document.getElementById('setupPage').style.display = 'none';
             document.getElementById('cbtPage').style.display = 'block';
