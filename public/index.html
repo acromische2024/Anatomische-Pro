@@ -821,7 +821,8 @@
                     jawaban_benar: q.answer || q.jawaban_benar || q.correct_answer || '',
                     pembahasan: q.explanation || q.pembahasan || '',
                     metadata: q.metadata || null,
-                    featureFlags: data.featureFlags || null
+                    featureFlags: data.featureFlags || null,
+                    gambar: q.gambar || q.image || q.image_url || q.url_gambar || null
                 };
                 if (q.hints && Array.isArray(q.hints)) {
                     q.hints.forEach((hint, hIdx) => {
@@ -843,7 +844,8 @@
                 jawaban_benar: answerText,
                 pembahasan: q.pembahasan || q.explanation || '',
                 eliminasi_opsi: q.eliminasi_opsi || null,
-                metadata: q.metadata || null
+                metadata: q.metadata || null,
+                gambar: q.gambar || q.image || q.image_url || q.url_gambar || null
             };
         });
     }
