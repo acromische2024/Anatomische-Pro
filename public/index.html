@@ -567,6 +567,10 @@
     </style>
 </head>
 <body>
+<div id="imageLightbox" onclick="closeLightbox()" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:10000; display:none; align-items:center; justify-content:center; cursor:zoom-out; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);">
+    <img id="lightboxImg" src="" style="max-width:95vw; max-height:95vh; object-fit:contain; border-radius:8px; border:2px solid var(--gold); box-shadow:0 0 30px rgba(0,0,0,0.8); transition:transform 0.3s ease;" />
+    <div style="position:absolute; top:20px; right:20px; color:#fff; font-size:24px; font-weight:bold; background:rgba(0,0,0,0.5); width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center;">✕</div>
+</div>
 <canvas id="fireCanvas" style="position:fixed; inset:0; pointer-events:none; z-index:9999; display:none;"></canvas>
 <div class="bg-orbs"><span></span><span></span><span></span></div>
 <div id="globalProgress"><div id="globalProgressBar"></div></div>
@@ -887,6 +891,23 @@
     
     let isAdminMode = false;
     let adminPassword = sessionStorage.getItem('adminPassword') || '';
+
+    function openLightbox(url) {
+        const lightbox = document.getElementById('imageLightbox');
+        const img = document.getElementById('lightboxImg');
+        if (lightbox && img) {
+            img.src = url;
+            lightbox.style.display = 'flex';
+            img.style.transform = 'scale(0.9)';
+            setTimeout(() => { img.style.transform = 'scale(1)'; }, 10);
+        }
+    }
+    function closeLightbox() {
+        const lightbox = document.getElementById('imageLightbox');
+        if (lightbox) {
+            lightbox.style.display = 'none';
+        }
+    }
 
     function showToast(msg, icon = 'ℹ️') {
         const t = document.getElementById('toast');
@@ -1591,12 +1612,10 @@
             if (imgUrl) {
                 imgContainer.style.display = 'block';
                 imgContainer.innerHTML = `
-                    <div style="position: relative; display: inline-block; max-width: 100%; margin-bottom: 12px;">
-                        <img src="${imgUrl}" style="max-width: 100%; max-height: 320px; border-radius: var(--radius); border: 1.5px solid var(--gold-line); object-fit: contain;" />
-                        <div style="margin-top: 10px; text-align: center;">
-                            <a href="${imgUrl}" target="_blank" style="font-size: 11px; color: var(--gold); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--gold-line); border-radius: 8px; background: rgba(212, 168, 67, 0.03); transition: all 0.2s;" onmouseover="this.style.background='rgba(212,168,67,0.1)'" onmouseout="this.style.background='rgba(212,168,67,0.03)'">
-                                🔗 Buka Gambar di Tab Baru
-                            </a>
+                    <div style="position: relative; display: inline-block; max-width: 100%; margin-bottom: 12px; cursor: zoom-in;" onclick="openLightbox('${imgUrl}')">
+                        <img src="${imgUrl}" style="max-width: 100%; max-height: 320px; border-radius: var(--radius); border: 1.5px solid var(--gold-line); object-fit: contain; display: block;" />
+                        <div style="margin-top: 8px; font-size: 11px; color: var(--gold); font-weight: 700; text-align: center; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                            🔍 Sentuh gambar untuk memperbesar
                         </div>
                     </div>
                 `;
@@ -2314,12 +2333,10 @@ selectedImage = scoreImages["88_94"][Math.floor(Math.random() * scoreImages["88_
             const imgUrl = q.gambar || q.image || q.image_url || q.url_gambar;
             if (imgUrl) {
                 reviewImgHtml = `
-                    <div style="text-align:center; margin-bottom:16px;">
+                    <div style="text-align:center; margin-bottom:16px; cursor:zoom-in;" onclick="event.stopPropagation(); openLightbox('${imgUrl}')">
                         <img src="${imgUrl}" style="max-width: 100%; max-height: 250px; border-radius: var(--radius); border: 1.5px solid var(--gold-line); object-fit: contain;" />
-                        <div style="margin-top: 8px;">
-                            <a href="${imgUrl}" target="_blank" style="font-size: 10px; color: var(--gold); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border: 1px solid var(--gold-line); border-radius: 6px; background: rgba(212, 168, 67, 0.02);" onclick="event.stopPropagation();">
-                                🔗 Buka Gambar di Tab Baru
-                            </a>
+                        <div style="margin-top: 6px; font-size: 10px; color: var(--gold); font-weight: 700;">
+                            🔍 Sentuh gambar untuk memperbesar
                         </div>
                     </div>
                 `;
