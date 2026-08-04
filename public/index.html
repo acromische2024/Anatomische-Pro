@@ -2,7 +2,7 @@
 
 <html lang="id" style=""><head>
 <meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
 <title>AnatomischePro</title>
 <link rel="icon" type="image/png" href="logo.png"/>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
@@ -356,13 +356,26 @@
                 --radius: 12px;
                 --radius-lg: 16px;
             }
+            body {
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important;
+                -webkit-tap-highlight-color: transparent;
+                touch-action: manipulation;
+            }
             .wrapper {
-                padding: var(--spacing-md) var(--spacing-sm) 80px;
+                padding: var(--spacing-md) var(--spacing-sm) 40px !important;
             }
             header {
-                padding: var(--spacing-sm) var(--spacing-sm);
+                position: fixed !important;
+                top: 0; left: 0; right: 0;
+                z-index: 1000 !important;
+                padding: var(--spacing-sm) var(--spacing-sm) !important;
                 flex-wrap: wrap;
                 gap: 10px;
+                background: rgba(11, 12, 16, 0.95) !important;
+                backdrop-filter: blur(12px) !important;
+                -webkit-backdrop-filter: blur(12px) !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
             }
             header .subtitle {
                 display: none;
@@ -370,41 +383,111 @@
             header .logo {
                 font-size: 18px;
             }
-            .card {
-                padding: 16px;
+            #setupPage, #cbtPage, #resultPage {
+                margin-top: calc(56px + env(safe-area-inset-top)) !important;
             }
-            .question-text {
-                font-size: 15px;
-                line-height: 1.6;
-                padding: 12px;
+            .card {
+                padding: 20px !important;
+                border-radius: 20px !important;
+                background: linear-gradient(135deg, #161822, #1a1c29) !important;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.4) !important;
+            }
+            .question-panel .card {
+                border-left: 4px solid var(--gold) !important;
+            }
+            .question-title {
+                font-size: clamp(1.25rem, 5vw, 1.5rem) !important;
+                line-height: 1.4 !important;
+                font-weight: 700 !important;
+                padding: 0 !important;
+                margin-bottom: 16px !important;
+            }
+            .vignette-text {
+                font-size: 16px !important;
+                line-height: 1.6 !important;
+                color: var(--slate-200) !important;
+                margin-bottom: 20px !important;
             }
             .score-number {
                 font-size: 48px;
             }
             .cbt-layout {
                 gap: var(--spacing-md);
+                flex-direction: column !important;
+            }
+            .question-panel {
+                width: 100% !important;
+            }
+            .sidebar {
+                width: 100% !important;
+                position: relative !important;
+                top: 0 !important;
+                margin-top: 24px;
             }
             .option-label {
-                padding: 12px 16px;
-                font-size: 14px;
-                margin-bottom: 8px;
+                padding: 14px 18px !important;
+                font-size: 14px !important;
+                margin-bottom: 10px !important;
+                border-radius: 12px !important;
+                min-height: 48px !important;
             }
             .option-bubble {
                 width: 28px;
                 height: 28px;
                 font-size: 12px;
+                border-radius: 6px !important;
             }
             .guess-input {
-                padding: 12px;
-                font-size: 16px;
-                margin-bottom: 16px;
+                height: 56px !important;
+                font-size: 16px !important;
+                padding: 0 16px !important;
+                background: rgba(255,255,255,0.05) !important;
+                border: 1px solid rgba(255,255,255,0.2) !important;
+                border-radius: 12px !important;
+                margin-bottom: 16px !important;
+                text-align: left !important;
+            }
+            .guess-input:focus {
+                border-color: var(--gold) !important;
+                box-shadow: 0 0 8px var(--gold-soft) !important;
             }
             #questionImageContainer img {
                 max-height: 220px !important;
+                object-fit: contain;
             }
-            .doubt-toggle {
-                padding: 8px 12px;
-                font-size: 12px;
+            .action-row-container {
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                z-index: 1001 !important;
+                background: rgba(22, 24, 34, 0.95) !important;
+                backdrop-filter: blur(16px) !important;
+                -webkit-backdrop-filter: blur(16px) !important;
+                border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+                padding: 16px 16px calc(16px + env(safe-area-inset-bottom)) !important;
+                margin: 0 !important;
+                display: flex !important;
+                gap: 12px !important;
+                justify-content: space-between !important;
+                box-shadow: 0 -8px 24px rgba(0,0,0,0.3) !important;
+            }
+            .action-row-container .btn {
+                height: 48px !important;
+                min-width: 100px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 12px !important;
+                text-transform: uppercase;
+                font-size: 13px !important;
+                letter-spacing: 0.5px;
+            }
+            .action-row-container .doubt-toggle {
+                height: 48px !important;
+                border-radius: 12px !important;
+                font-size: 12px !important;
+                padding: 0 12px !important;
             }
             .stats-bar {
                 gap: 6px;
@@ -548,7 +631,7 @@
     <!-- MCQ Mode -->
     <div class="options" id="optionsContainer"></div>
     <div id="pembahasanBox" style="display:none;"></div>
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-top:32px; padding-top:24px; border-top:1px solid var(--gold-line);">
+    <div class="action-row-container" style="display:flex; align-items:center; justify-content:space-between; margin-top:32px; padding-top:24px; border-top:1px solid var(--gold-line);">
         <button class="btn btn-ghost" id="btnPrev" onclick="navigateQuestion(-1)">← Sebelumnya</button>
         <div style="display:flex; gap:8px; align-items:center;">
             <button class="btn btn-outline-accent" id="btnMintaHint" onclick="revealNextHint()" style="display:none;">💡 HINT</button>
@@ -1158,7 +1241,7 @@
                 <li class="file-item" style="display: flex; align-items: center; width: 100%;">
                     <input type="checkbox" value="${escHtml(name)}" class="db-checkbox" id="cb_${globalCheckboxIdx}" checked style="flex-shrink: 0;">
                     <label for="cb_${globalCheckboxIdx}" style="margin-left: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;">${escHtml(displayName)}</label>
-                    <span class="badge" style="flex-shrink: 0; margin-left: 8px; border: 1.5px solid var(--gold); color: var(--gold); background: transparent; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">${count} PRO</span>
+                    <span class="badge" style="flex-shrink: 0; margin-left: 8px; border: 1.5px solid var(--gold); color: var(--gold); background: transparent; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">${count} SOAL</span>
                     ${progressText}
                     ${progressBtn}
                     ${shareBtn}
@@ -1470,7 +1553,16 @@
         if (imgContainer) {
             if (imgUrl) {
                 imgContainer.style.display = 'block';
-                imgContainer.innerHTML = `<img src="${imgUrl}" style="max-width: 100%; max-height: 350px; border-radius: var(--radius); border: 1.5px solid var(--gold-line); object-fit: contain;" />`;
+                imgContainer.innerHTML = `
+                    <div style="position: relative; display: inline-block; max-width: 100%; margin-bottom: 12px;">
+                        <img src="${imgUrl}" style="max-width: 100%; max-height: 320px; border-radius: var(--radius); border: 1.5px solid var(--gold-line); object-fit: contain;" />
+                        <div style="margin-top: 10px; text-align: center;">
+                            <a href="${imgUrl}" target="_blank" style="font-size: 11px; color: var(--gold); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--gold-line); border-radius: 8px; background: rgba(212, 168, 67, 0.03); transition: all 0.2s;" onmouseover="this.style.background='rgba(212,168,67,0.1)'" onmouseout="this.style.background='rgba(212,168,67,0.03)'">
+                                🔗 Buka Gambar di Tab Baru
+                            </a>
+                        </div>
+                    </div>
+                `;
             } else {
                 imgContainer.style.display = 'none';
                 imgContainer.innerHTML = '';
@@ -2184,7 +2276,16 @@ selectedImage = scoreImages["88_94"][Math.floor(Math.random() * scoreImages["88_
             let reviewImgHtml = '';
             const imgUrl = q.gambar || q.image || q.image_url || q.url_gambar;
             if (imgUrl) {
-                reviewImgHtml = `<div style="text-align:center; margin-bottom:16px;"><img src="${imgUrl}" style="max-width: 100%; max-height: 250px; border-radius: var(--radius); border: 1.5px solid var(--gold-line); object-fit: contain;" /></div>`;
+                reviewImgHtml = `
+                    <div style="text-align:center; margin-bottom:16px;">
+                        <img src="${imgUrl}" style="max-width: 100%; max-height: 250px; border-radius: var(--radius); border: 1.5px solid var(--gold-line); object-fit: contain;" />
+                        <div style="margin-top: 8px;">
+                            <a href="${imgUrl}" target="_blank" style="font-size: 10px; color: var(--gold); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border: 1px solid var(--gold-line); border-radius: 6px; background: rgba(212, 168, 67, 0.02);" onclick="event.stopPropagation();">
+                                🔗 Buka Gambar di Tab Baru
+                            </a>
+                        </div>
+                    </div>
+                `;
             }
 
             html += `
@@ -2317,5 +2418,30 @@ selectedImage = scoreImages["88_94"][Math.floor(Math.random() * scoreImages["88_
     loadDatasetsFromServer();
     checkAdminState();
     restoreSession();
+
+    // Visual Viewport Keyboard Handling for Mobile Devices
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', () => {
+            const actionBar = document.querySelector('.action-row-container');
+            const cbtPage = document.getElementById('cbtPage');
+            if (actionBar && cbtPage && cbtPage.style.display === 'block') {
+                const offset = window.innerHeight - window.visualViewport.height;
+                if (offset > 100) {
+                    actionBar.style.position = 'absolute';
+                    actionBar.style.bottom = `${offset}px`;
+                    
+                    const active = document.activeElement;
+                    if (active && (active.tagName === 'INPUT' || active.className.includes('guess-input'))) {
+                        setTimeout(() => {
+                            active.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 120);
+                    }
+                } else {
+                    actionBar.style.position = 'fixed';
+                    actionBar.style.bottom = '0px';
+                }
+            }
+        });
+    }
 </script>
 </body></html>
