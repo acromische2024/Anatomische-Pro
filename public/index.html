@@ -477,7 +477,7 @@
                 box-shadow: 0 0 8px var(--gold-soft) !important;
             }
             #questionImageContainer img {
-                max-height: 220px !important;
+                max-height: 320px !important;
                 object-fit: contain;
             }
             .action-row-container {
@@ -1613,7 +1613,7 @@
                 imgContainer.style.display = 'block';
                 imgContainer.innerHTML = `
                     <div style="position: relative; display: inline-block; max-width: 100%; margin-bottom: 12px; cursor: zoom-in;" onclick="openLightbox('${imgUrl}')">
-                        <img src="${imgUrl}" style="max-width: 100%; max-height: 320px; border-radius: var(--radius); border: 1.5px solid var(--gold-line); object-fit: contain; display: block;" />
+                        <img src="${imgUrl}" style="max-width: 100%; max-height: 480px; border-radius: var(--radius); border: 1.5px solid var(--gold-line); object-fit: contain; display: block;" />
                         <div style="margin-top: 8px; font-size: 11px; color: var(--gold); font-weight: 700; text-align: center; display: flex; align-items: center; justify-content: center; gap: 4px;">
                             🔍 Sentuh gambar untuk memperbesar
                         </div>
@@ -1790,24 +1790,172 @@
 
     function checkIsCorrect(answer, question) {
         if (!answer) return false;
-        const kunci = (question.jawaban_benar || question.answer || '').toLowerCase().trim();
-        const input = String(answer).toLowerCase().trim();
-        if (input === kunci) return true;
 
-        const flags = question.featureFlags || {};
-        const acceptPartial = flags.acceptPartialMatch || question.acceptPartialMatch;
-        if (acceptPartial && input.length >= 3 && (kunci.includes(input) || input.includes(kunci))) {
-            return true;
-        }
+        // 1. Helper function for clean normalization
+        const normalize = (str) => {
+            if (!str) return "";
+            return str.toLowerCase()
+                .replace(/[\-\_\.\,]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        };
 
+        // 2. Remove anatomical abbreviations/noise words to match base terms
+        const stripNoise = (str) => {
+            const noiseWords = [
+                /\bm\b/g, /\bmusculus\b/g, /\bmm\b/g, 
+                /\blig\b/g, /\bligamentum\b/g, 
+                /\ba\b/g, /\barteria\b/g, /\baa\b/g,
+                /\bv\b/g, /\bvena\b/g, /\bvv\b/g,
+                /\bn\b/g, /\bnervus\b/g, /\bnn\b/g,
+                /\br\b/g, /\bregio\b/g,
+                /\bdan\b/g, /\bserta\b/g, /\batau\b/g
+            ];
+            let res = str.toLowerCase();
+            noiseWords.forEach(pattern => {
+                res = res.replace(pattern, '');
+            });
+            return res.replace(/\s+/g, ' ').trim();
+        };
+
+        // 3. Levenshtein Distance for typo resilience
+        const getEditDistance = (a, b) => {
+            if (a.length === 0) return b.length;
+            if (b.length === 0) return a.length;
+            const matrix = [];
+            for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+            for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1, // substitution
+                            matrix[i][j - 1] + 1,     // insertion
+                            matrix[i - 1][j] + 1      // deletion
+                        );
+                    }
+                }
+            }
+            return matrix[b.length][a.length];
+        };
+
+        // Check if two individual terms are a match (exact, substring, or fuzzy typo match)
+        const isTermMatch = (userTerm, keyTerm) => {
+            const u = stripNoise(userTerm);
+            const k = stripNoise(keyTerm);
+            if (!u || !k) return false;
+            
+            // Exact or substring match after stripping noise
+            if (u === k || k.includes(u) || u.includes(k)) return true;
+            
+            // Fuzzy match for longer words (allow 1 or 2 typos)
+            if (u.length >= 5 && k.length >= 5) {
+                const dist = getEditDistance(u, k);
+                const maxAllowedDist = u.length > 8 ? 2 : 1;
+                if (dist <= maxAllowedDist) return true;
+            }
+            return false;
+        };
+
+        // Extract list of distinct answer terms from a comma/semicolon separated string
+        const splitToTerms = (str) => {
+            if (!str) return [];
+            // split by comma, semicolon, or conjunctions like ' dan ', ' serta ', ' atau ', '/'
+            const cleaned = str.replace(/\b(dan|serta|atau)\b/gi, ',').replace(/\//g, ',');
+            return cleaned.split(/[\,\;]/)
+                .map(t => t.trim())
+                .filter(t => t.length > 0);
+        };
+
+        // Gather all correct answers from the main key and alternative keys
+        let allCorrectKeysList = [];
+        const mainKey = question.jawaban_benar || question.answer || '';
+        allCorrectKeysList.push(mainKey);
+        
         if (question.kunci_alternatif && Array.isArray(question.kunci_alternatif)) {
-            return question.kunci_alternatif.some(k => {
-                const altKunci = k.toLowerCase().trim();
-                if (altKunci === input) return true;
-                if (acceptPartial && input.length >= 3 && (altKunci.includes(input) || input.includes(altKunci))) return true;
-                return false;
+            question.kunci_alternatif.forEach(k => {
+                if (k) allCorrectKeysList.push(k);
             });
         }
+
+        // Parse user input into individual terms
+        const userInputTerms = splitToTerms(String(answer));
+        if (userInputTerms.length === 0) return false;
+
+        // Detect if the question requires a specific minimum number of answers (e.g. "minimal 2")
+        const questionTextRaw = (question.pertanyaan || question.question || '').toLowerCase();
+        let requiredMatchesCount = null;
+        
+        // Match patterns like "minimal 2", "minimal dua", "sebutkan 2", "2 organ"
+        const minMatch = questionTextRaw.match(/minimal\s+(\d+|satu|dua|tiga|empat|lima|enam|tujuh|delapan|sembilan|sepuluh)/);
+        const sebutkanMatch = questionTextRaw.match(/sebutkan\s+(\d+|satu|dua|tiga|empat|lima|enam|tujuh|delapan|sembilan|sepuluh)/);
+        const organMatch = questionTextRaw.match(/(\d+|satu|dua|tiga|empat|lima|enam|tujuh|delapan|sembilan|sepuluh)\s+(organ|struktur|bagian|jawaban)/);
+        
+        const numMap = { 
+            'satu': 1, 'dua': 2, 'tiga': 3, 'empat': 4, 'lima': 5, 
+            'enam': 6, 'tujuh': 7, 'delapan': 8, 'sembilan': 9, 'sepuluh': 10 
+        };
+        
+        let matchVal = null;
+        if (minMatch) matchVal = minMatch[1];
+        else if (sebutkanMatch) matchVal = sebutkanMatch[1];
+        else if (organMatch) matchVal = organMatch[1];
+        
+        if (matchVal) {
+            requiredMatchesCount = isNaN(parseInt(matchVal, 10)) ? (numMap[matchVal] || 2) : parseInt(matchVal, 10);
+        }
+
+        // Evaluate matches against the correct keys
+        // We will check each of the correct key possibilities (since some might represent the full set of options)
+        for (let correctKeyOption of allCorrectKeysList) {
+            const correctTerms = splitToTerms(correctKeyOption);
+            if (correctTerms.length === 0) continue;
+
+            // Track which correct terms have been matched to prevent double matching
+            const matchedCorrectIndices = new Set();
+            let matchesFoundForThisOption = 0;
+
+            for (let uTerm of userInputTerms) {
+                for (let kIdx = 0; kIdx < correctTerms.length; kIdx++) {
+                    if (matchedCorrectIndices.has(kIdx)) continue;
+                    
+                    if (isTermMatch(uTerm, correctTerms[kIdx])) {
+                        matchedCorrectIndices.add(kIdx);
+                        matchesFoundForThisOption++;
+                        break;
+                    }
+                }
+            }
+
+            // Decide if it's correct:
+            if (requiredMatchesCount !== null) {
+                // If there's a "minimal X" requirement, user must match at least X correct terms
+                if (matchesFoundForThisOption >= requiredMatchesCount) {
+                    return true;
+                }
+            } else {
+                // Otherwise, the user must match ALL correct terms for this option
+                if (matchesFoundForThisOption === correctTerms.length) {
+                    return true;
+                }
+            }
+        }
+
+        // Fallback to basic partial match just in case
+        const flags = question.featureFlags || {};
+        const acceptPartial = flags.acceptPartialMatch || question.acceptPartialMatch;
+        const normalizedInput = normalize(answer);
+        
+        for (let correctKeyOption of allCorrectKeysList) {
+            const normalizedKey = normalize(correctKeyOption);
+            if (normalizedInput === normalizedKey) return true;
+            if (acceptPartial && normalizedInput.length >= 3 && (normalizedKey.includes(normalizedInput) || normalizedInput.includes(normalizedKey))) {
+                return true;
+            }
+        }
+
         return false;
     }
     
