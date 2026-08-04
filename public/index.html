@@ -222,6 +222,16 @@
             background: var(--bg-card);
             border: 1px solid var(--gold-line);
         }
+        .action-row-container {
+            background: var(--bg-card);
+            border: 1px solid var(--gold-line);
+            border-radius: 16px;
+            padding: 16px 24px;
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
 
         .q-meta { display: flex; align-items: center; gap: 16px; margin-bottom: var(--spacing-lg); }
         .q-number { font-size: 32px; font-weight: 800; color: var(--gold); line-height: 1; }
@@ -369,22 +379,37 @@
                 position: fixed !important;
                 top: 0; left: 0; right: 0;
                 z-index: 1000 !important;
-                padding: var(--spacing-sm) var(--spacing-sm) !important;
-                flex-wrap: wrap;
-                gap: 10px;
+                padding: 0 12px !important;
+                height: 56px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                flex-wrap: nowrap !important;
+                gap: 6px !important;
                 background: rgba(11, 12, 16, 0.95) !important;
                 backdrop-filter: blur(12px) !important;
                 -webkit-backdrop-filter: blur(12px) !important;
                 border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
             }
+            header .btn {
+                padding: 4px 8px !important;
+                font-size: 10px !important;
+                margin-right: 0 !important;
+                flex-shrink: 0 !important;
+                height: 32px !important;
+            }
+            header img {
+                height: 28px !important;
+                width: 28px !important;
+            }
+            header .logo {
+                font-size: 15px !important;
+            }
             header .subtitle {
                 display: none;
             }
-            header .logo {
-                font-size: 18px;
-            }
             #setupPage, #cbtPage, #resultPage {
-                margin-top: calc(56px + env(safe-area-inset-top)) !important;
+                margin-top: calc(72px + env(safe-area-inset-top)) !important;
             }
             .card {
                 padding: 20px !important;
@@ -465,16 +490,23 @@
                 backdrop-filter: blur(16px) !important;
                 -webkit-backdrop-filter: blur(16px) !important;
                 border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
-                padding: 16px 16px calc(16px + env(safe-area-inset-bottom)) !important;
+                padding: 16px 12px calc(16px + env(safe-area-inset-bottom)) !important;
                 margin: 0 !important;
                 display: flex !important;
-                gap: 12px !important;
+                gap: 8px !important;
                 justify-content: space-between !important;
                 box-shadow: 0 -8px 24px rgba(0,0,0,0.3) !important;
             }
+            .action-row-container .btn-text {
+                display: none !important;
+            }
+            .action-row-container > div {
+                display: contents !important;
+            }
             .action-row-container .btn {
                 height: 48px !important;
-                min-width: 100px;
+                min-width: 44px !important;
+                padding: 0 16px !important;
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
@@ -486,8 +518,11 @@
             .action-row-container .doubt-toggle {
                 height: 48px !important;
                 border-radius: 12px !important;
-                font-size: 12px !important;
+                font-size: 14px !important;
                 padding: 0 12px !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
             }
             .stats-bar {
                 gap: 6px;
@@ -631,18 +666,18 @@
     <!-- MCQ Mode -->
     <div class="options" id="optionsContainer"></div>
     <div id="pembahasanBox" style="display:none;"></div>
-    <div class="action-row-container" style="display:flex; align-items:center; justify-content:space-between; margin-top:32px; padding-top:24px; border-top:1px solid var(--gold-line);">
-        <button class="btn btn-ghost" id="btnPrev" onclick="navigateQuestion(-1)">← Sebelumnya</button>
-        <div style="display:flex; gap:8px; align-items:center;">
-            <button class="btn btn-outline-accent" id="btnMintaHint" onclick="revealNextHint()" style="display:none;">💡 HINT</button>
-            <button class="btn btn-primary" id="btnCekJawaban" onclick="cekJawabanSekarang()" style="display:none;">CHECK JAWABAN</button>
-            <label class="btn btn-ghost doubt-toggle" id="doubtToggle" style="margin:0; padding:10px 16px; display:inline-flex; align-items:center; gap:8px; border:1px solid var(--gold-line); border-radius:12px; background:rgba(255,255,255,0.03); color:var(--ink-soft); cursor:pointer;">
-                <input id="checkDoubt" onchange="toggleDoubt()" style="display:none;" type="checkbox"/>
-                Tandai Ragu ⭐
-            </label>
-        </div>
-        <button class="btn btn-primary" id="btnNext" onclick="navigateQuestion(1)">Selanjutnya →</button>
+</div> <!-- Closed .card here -->
+<div class="action-row-container">
+    <button class="btn btn-ghost" id="btnPrev" onclick="navigateQuestion(-1)">← <span class="btn-text">Sebelumnya</span></button>
+    <div style="display:flex; gap:8px; align-items:center;">
+        <button class="btn btn-outline-accent" id="btnMintaHint" onclick="revealNextHint()" style="display:none;">💡 <span class="btn-text">HINT</span></button>
+        <button class="btn btn-primary" id="btnCekJawaban" onclick="cekJawabanSekarang()" style="display:none;">CHECK<span class="btn-text"> JAWABAN</span></button>
+        <label class="btn btn-ghost doubt-toggle" id="doubtToggle" style="margin:0; padding:10px 16px; display:inline-flex; align-items:center; gap:8px; border:1px solid var(--gold-line); border-radius:12px; background:rgba(255,255,255,0.03); color:var(--ink-soft); cursor:pointer;">
+            <input id="checkDoubt" onchange="toggleDoubt()" style="display:none;" type="checkbox"/>
+            <span class="btn-text">Tandai Ragu </span>⭐
+        </label>
     </div>
+    <button class="btn btn-primary" id="btnNext" onclick="navigateQuestion(1)"><span class="btn-text">Selanjutnya</span> →</button>
 </div>
 </div>
 <div class="sidebar">
@@ -1722,11 +1757,11 @@
         document.getElementById('btnPrev').disabled = idx === 0;
         const btnNext = document.getElementById('btnNext');
         if (idx === total - 1) {
-            btnNext.textContent = 'FINISH';
+            btnNext.innerHTML = '🏁 <span class="btn-text">SELESAIKAN</span>';
             btnNext.className = 'btn btn-danger';
             btnNext.onclick = openFinishModal;
         } else {
-            btnNext.textContent = 'NEXT →';
+            btnNext.innerHTML = '<span class="btn-text">Selanjutnya</span> →';
             btnNext.className = 'btn btn-primary';
             btnNext.onclick = () => navigateQuestion(1);
         }
