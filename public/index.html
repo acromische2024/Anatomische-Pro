@@ -1787,20 +1787,20 @@
     }
 
     function resumeActiveSession() {
-        document.getElementById('setupPage').style.display = 'none';
-        document.getElementById('cbtPage').style.display = 'block';
-        document.getElementById('btnBackHome').style.display = 'inline-flex';
-        document.getElementById('btnResumeQuiz').style.display = 'none';
-        buildNavGrid();
-        loadQuestion(currentIndex);
+        const lastActive = localStorage.getItem('anatomische_pro_last_active_key');
+        if (lastActive) {
+            loadSessionByKey(lastActive);
+        }
     }
 
     function updateResumeButtonVisibility() {
         const resumeBtn = document.getElementById('btnResumeQuiz');
         if (resumeBtn) {
-            const hasSession = localStorage.getItem('anatomische_pro_session');
+            const urlParams = new URLSearchParams(window.location.search);
+            const isShareLink = urlParams.has('dataset');
+            const hasSession = localStorage.getItem('anatomische_pro_last_active_key');
             const onSetupPage = document.getElementById('setupPage').style.display !== 'none';
-            if (hasSession && onSetupPage) {
+            if (hasSession && onSetupPage && !isShareLink) {
                 resumeBtn.style.display = 'inline-flex';
             } else {
                 resumeBtn.style.display = 'none';
@@ -3270,10 +3270,7 @@ selectedImage = scoreImages["88_94"][Math.floor(Math.random() * scoreImages["88_
     }
 
     function restoreSession() {
-        const lastActive = localStorage.getItem('anatomische_pro_last_active_key');
-        if (lastActive) {
-            loadSessionByKey(lastActive);
-        }
+        updateResumeButtonVisibility();
     }
 
     checkServerHealth();
