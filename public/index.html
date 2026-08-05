@@ -13,31 +13,31 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
         :root {
-            /* Premium Dark Medical Theme Variables */
-            --bg-deep:     #0B0C10;
-            --bg-card:     #1A1D29;
+            /* Premium Slate Dark Theme Variables with Gold Accents */
+            --bg-deep:     #0F172A;
+            --bg-card:     rgba(30, 41, 59, 0.45);
             
             --gold:        #D4A843;
             --gold-dark:   #B8860B;
             --gold-line:   rgba(212, 168, 67, 0.15);
             --gold-soft:   rgba(212, 168, 67, 0.08);
-            --amber-accent: #F0C75E;
+            --amber-accent: #F59E0B;
 
             --ink:         #FFFFFF;
-            --ink-soft:    #A1A1AA;
-            --ink-faint:   #52525B;
+            --ink-soft:    #CBD5E1;
+            --ink-faint:   #64748B;
             --slate-200:   #E2E8F0;
             --slate-300:   #CBD5E1;
 
             --green:       #10B981;
-            --red:         #EF4444;
-            --red-bg:      rgba(239, 68, 68, 0.15);
+            --red:         #F43F5E;
+            --red-bg:      rgba(244, 63, 94, 0.15);
 
-            --glass-border: rgba(212, 168, 67, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.08);
             --radius:      16px;
             --radius-lg:   24px;
             
-            --shadow-lg:   0 4px 24px rgba(0, 0, 0, 0.4);
+            --shadow-lg:   0 10px 40px rgba(0, 0, 0, 0.5);
             --ease-out:    cubic-bezier(.16,1,.3,1);
             --spacing-md:  24px;
             --spacing-lg:  32px;
@@ -207,24 +207,33 @@
 
         .divider { border: none; border-top: 1px solid var(--gold-line); margin: var(--spacing-md) 0; opacity: 0.5; }
 
-        .cbt-layout { display: flex; gap: var(--spacing-lg); align-items: flex-start; }
+        .cbt-layout {
+            display: grid;
+            grid-template-columns: 8fr 4fr;
+            gap: var(--spacing-lg);
+            align-items: flex-start;
+        }
         @media (max-width: 900px) { 
-            .cbt-layout { flex-direction: column; } 
+            .cbt-layout { display: flex; flex-direction: column; } 
             .sidebar { width: 100% !important; position: relative !important; top: 0 !important; }
         }
 
-        .question-panel { width: 65%; flex-grow: 0; flex-shrink: 0; min-width: 0; }
-        .sidebar { width: 35%; flex-shrink: 0; position: sticky; top: var(--spacing-md); }
+        .question-panel { width: 100%; min-width: 0; }
+        .sidebar { width: 100%; position: sticky; top: var(--spacing-md); }
 
         .question-panel .card {
             border-left: 4px solid var(--gold) !important;
-            border-radius: 16px !important;
+            border-radius: var(--radius-lg) !important;
             background: var(--bg-card);
-            border: 1px solid var(--gold-line);
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
         }
         .action-row-container {
             background: var(--bg-card);
-            border: 1px solid var(--gold-line);
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
             border-radius: 16px;
             padding: 16px 24px;
             margin-top: 16px;
@@ -255,70 +264,253 @@
         .guess-input:focus { border-color: var(--gold); box-shadow: 0 0 0 4px var(--gold-soft); }
 
         .option-label {
-            display: flex; align-items: center; gap: 16px;
-            padding: 16px 20px; border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.08); background: #16181F;
-            cursor: pointer; transition: all 0.2s; font-size: 15px; font-weight: 500;
-            color: var(--slate-300); margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+            border-radius: 16px !important; /* rounded-xl */
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            background: rgba(30, 41, 59, 0.3) !important;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            margin-bottom: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--slate-300);
+            user-select: none;
         }
-        .option-label:hover:not(.locked) { border-color: var(--amber-accent); background: #1c1f28; color: #fff; }
-        .option-label.selected { border: 2px solid var(--gold) !important; background: var(--gold-soft); color: #fff; box-shadow: 0 0 12px rgba(212, 168, 67, 0.15); }
-        .option-label.correct-ans { border: 2px solid var(--green) !important; background: rgba(16, 185, 129, 0.1); color: #fff; }
-        .option-label.wrong-ans { border: 2px solid var(--red) !important; background: rgba(239, 68, 68, 0.1); color: #fff; }
+        .option-label:hover:not(.locked) {
+            transform: scale(1.01);
+            border-color: var(--gold) !important;
+            background: rgba(212, 168, 67, 0.06) !important;
+            box-shadow: 0 4px 20px rgba(212, 168, 67, 0.1) !important;
+            color: #fff;
+        }
+        .option-label:active:not(.locked) {
+            transform: scale(0.99);
+        }
+        .option-label.selected {
+            border-color: var(--gold) !important;
+            background: rgba(212, 168, 67, 0.12) !important;
+            box-shadow: 0 0 15px rgba(212, 168, 67, 0.2) !important;
+            color: #fff;
+        }
+        .option-label.correct-ans {
+            border-color: var(--green) !important;
+            background: rgba(16, 185, 129, 0.15) !important;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.2) !important;
+            color: #fff;
+        }
+        .option-label.wrong-ans {
+            border-color: var(--red) !important;
+            background: rgba(244, 63, 94, 0.15) !important;
+            box-shadow: 0 0 15px rgba(244, 63, 94, 0.2) !important;
+            color: #fff;
+        }
         
         .option-bubble {
-            width: 32px; height: 32px; border-radius: 6px;
+            width: 32px; height: 32px; border-radius: 50%;
             border: 1px solid rgba(255,255,255,0.12); display: flex;
             align-items: center; justify-content: center;
             font-size: 14px; font-weight: 800; background: rgba(255,255,255,0.03); color: var(--slate-300); transition: all 0.2s;
         }
         .option-label.selected .option-bubble { background: var(--gold); color: #000; border-color: var(--gold); }
+        .option-label.correct-ans .option-bubble { background: var(--green); color: #000; border-color: var(--green); }
+        .option-label.wrong-ans .option-bubble { background: var(--red); color: #fff; border-color: var(--red); }
 
         .doubt-toggle {
             display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 12px;
             border: 1px solid var(--gold-line); background: rgba(255,255,255,0.03);
             color: var(--ink-soft); cursor: pointer; font-size: 13px; font-weight: 700;
         }
-        .doubt-toggle.active { background: rgba(184, 134, 11, 0.1); border-color: var(--gold); color: var(--gold); }
+        .doubt-toggle.active { background: rgba(245, 158, 11, 0.1); border-color: var(--amber-accent); color: var(--amber-accent); }
         .doubt-indicator { width: 10px; height: 10px; border-radius: 50%; background: var(--ink-faint); }
-        .doubt-toggle.active .doubt-indicator { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+        .doubt-toggle.active .doubt-indicator { background: var(--amber-accent); box-shadow: 0 0 8px var(--amber-accent); }
 
         .nav-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
         .nav-box {
             aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
             border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 800;
-            border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02);
-            color: var(--ink-faint); transition: all 0.2s;
+            border: 1px solid rgba(255,255,255,0.08); background: #1E293B;
+            color: var(--ink-soft); transition: all 0.2s;
         }
-        .nav-box:hover { border-color: var(--gold); color: var(--gold); }
+        .nav-box:hover { border-color: var(--gold); color: var(--gold); transform: translateY(-2px); }
         .nav-box.active {
-            border: 2px solid var(--amber-accent) !important; 
-            box-shadow: 0 0 10px var(--amber-accent) !important; 
-            color: var(--amber-accent) !important; 
-            background: rgba(255,255,255,0.02) !important;
+            border: 2px solid var(--gold) !important; 
+            box-shadow: 0 0 10px var(--gold) !important; 
+            color: #fff !important;
         }
         .nav-box.answered { 
-            background: var(--green) !important; 
-            color: #000 !important; 
+            background: rgba(16, 185, 129, 0.15) !important; 
+            color: var(--green) !important; 
             border-color: var(--green) !important; 
         }
         .nav-box.correct { 
-            background: var(--green) !important; 
-            color: #000 !important; 
+            background: rgba(16, 185, 129, 0.15) !important; 
+            color: var(--green) !important; 
             border-color: var(--green) !important; 
         }
         .nav-box.wrong { 
-            background: var(--red) !important; 
-            color: #fff !important; 
+            background: rgba(244, 63, 94, 0.15) !important; 
+            color: var(--red) !important; 
             border-color: var(--red) !important; 
         }
         .nav-box.doubt { 
-            background: var(--amber-accent) !important; 
-            color: #000 !important; 
+            background: rgba(245, 158, 11, 0.15) !important; 
+            color: var(--amber-accent) !important; 
             border-color: var(--amber-accent) !important; 
         }
 
         .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .stat-item { background: rgba(255,255,255,0.02); border: 1px solid var(--gold-line); border-radius: 12px; padding: 12px 4px; text-align: center; }
+        .stat-value { font-size: 18px; font-weight: 800; color: var(--gold); }
+        .stat-label { font-size: 10px; color: var(--ink-faint); font-weight: 800; text-transform: uppercase; }
+
+        /* 3D Card Flipping Styles */
+        .flashcard-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            height: 580px;
+            perspective: 1000px;
+            position: relative;
+            z-index: 5;
+        }
+        .flashcard-card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            user-select: none;
+            touch-action: none;
+            cursor: grab;
+        }
+        .flashcard-card:active {
+            cursor: grabbing;
+        }
+        .flashcard-card.flipped {
+            transform: rotateY(180deg);
+        }
+        .flashcard-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            border-radius: var(--radius-lg);
+            background: rgba(30, 41, 59, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow-y: auto;
+        }
+        .flashcard-back {
+            transform: rotateY(180deg);
+        }
+        .flashcard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+        .flashcard-body {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            overflow-y: auto;
+        }
+        .flashcard-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 16px;
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        .self-eval-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--ink-soft);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        .self-eval-row {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+        }
+        .self-eval-btn {
+            flex: 1;
+            height: 46px;
+            font-weight: 800;
+            font-size: 12px;
+            border-radius: 12px;
+        }
+        .btn-rose { background: rgba(244, 63, 94, 0.15) !important; border: 1px solid #f43f5e !important; color: #f43f5e !important; }
+        .btn-rose:hover { background: #f43f5e !important; color: #fff !important; }
+        .btn-amber { background: rgba(245, 158, 11, 0.15) !important; border: 1px solid #f59e0b !important; color: #f59e0b !important; }
+        .btn-amber:hover { background: #f59e0b !important; color: #fff !important; }
+        .btn-emerald { background: rgba(16, 185, 129, 0.15) !important; border: 1px solid #10b981 !important; color: #10b981 !important; }
+        .btn-emerald:hover { background: #10b981 !important; color: #fff !important; }
+
+        /* Swipe Action Overlays */
+        .swipe-overlay {
+            position: absolute;
+            inset: 0;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 900;
+            color: #fff;
+            opacity: 0;
+            z-index: 10;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        .swipe-overlay.swipe-left-active {
+            background: rgba(244, 63, 94, 0.85);
+            opacity: 1;
+        }
+        .swipe-overlay.swipe-right-active {
+            background: rgba(16, 185, 129, 0.85);
+            opacity: 1;
+        }
+
+        /* Slide Transition for CBT Card Content */
+        .card-slide-container {
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .card-slide-container.slide-out-left {
+            opacity: 0;
+            transform: translateX(-40px);
+        }
+        .card-slide-container.slide-out-right {
+            opacity: 0;
+            transform: translateX(40px);
+        }
+        .card-slide-container.slide-in-left {
+            opacity: 0;
+            transform: translateX(40px);
+        }
+        .card-slide-container.slide-in-right {
+            opacity: 0;
+            transform: translateX(-40px);
+        }
         .stat-item { background: rgba(255,255,255,0.02); border: 1px solid var(--gold-line); border-radius: 12px; padding: 12px 4px; text-align: center; }
         .stat-value { font-size: 18px; font-weight: 800; color: var(--gold); }
         .stat-label { font-size: 10px; color: var(--ink-faint); font-weight: 800; text-transform: uppercase; }
@@ -633,6 +825,14 @@
             <input checked="" id="shuffleQuestions" type="checkbox"/>
             Acak Urutan Soal
         </label>
+        <label class="toggle-field">
+            <input id="enableQuizTimer" type="checkbox" onchange="document.getElementById('timerDurationContainer').style.display = this.checked ? 'flex' : 'none'"/>
+            Aktifkan Batasan Waktu per Soal
+        </label>
+        <div id="timerDurationContainer" style="display: none; margin-top: 16px; align-items: center; justify-content: space-between; font-size: 14px; color: var(--ink-soft); font-weight: 600;">
+            <span>Durasi per Soal (Detik)</span>
+            <input type="number" id="quizTimerDuration" min="5" value="60" style="background: var(--bg-deep); color: var(--gold); border: 1px solid var(--gold-line); border-radius: 8px; padding: 6px 12px; font-family: inherit; font-size: 13px; font-weight: 700; outline: none; width: 120px; text-align: center; transition: all 0.2s;" />
+        </div>
         <div style="margin-top: 16px; display: flex; align-items: center; justify-content: space-between; font-size: 14px; color: var(--ink-soft); font-weight: 600;">
             <span>Jumlah Soal</span>
             <input type="number" id="maxQuestions" min="1" placeholder="Semua Soal" style="background: var(--bg-deep); color: var(--gold); border: 1px solid var(--gold-line); border-radius: 8px; padding: 6px 12px; font-family: inherit; font-size: 13px; font-weight: 700; outline: none; width: 120px; text-align: center; transition: all 0.2s;" />
@@ -652,38 +852,92 @@
 <div class="wrapper" id="cbtPage" style="display:none;">
 <div class="cbt-layout">
 <div class="question-panel">
-<div class="card">
-    <div class="progress-container" style="margin-bottom: 24px;">
-        <div id="qNumDisplayLarge" style="font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 10px;">Soal 1 dari 10</div>
-        <div class="q-progress-bar" style="height: 8px; background: rgba(255,255,255,0.05); border-radius: 99px; overflow: hidden; position: relative;">
-            <div class="q-progress-fill" id="qProgressFill" style="height: 100%; background: var(--gold); border-radius: 99px; box-shadow: 0 0 10px var(--gold); width: 0%; transition: width 0.3s var(--ease-out);"></div>
+    <!-- Standard MCQ Card -->
+    <div class="card" id="mainQuestionCard">
+        <!-- Status bar tipis -->
+        <div class="card-status-bar" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px; margin-bottom:20px;">
+            <div class="timer-container" style="display:flex; align-items:center; gap:8px;">
+                <span class="timer-icon">⏱️</span>
+                <span id="quizTimer" style="font-family:monospace; font-weight:700; font-size:14px; color:var(--gold);">00:00</span>
+                <div class="timer-bar-outer" style="width:80px; height:6px; background:rgba(255,255,255,0.05); border-radius:3px; overflow:hidden; position:relative;">
+                    <div id="timerBarInner" style="height:100%; width:100%; background:var(--gold); transition: width 1s linear;"></div>
+                </div>
+            </div>
+            <div class="progress-container-inline" style="flex-grow: 1; margin: 0 16px; display: flex; align-items: center; gap: 8px;">
+                <div class="q-progress-bar" style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 99px; overflow: hidden; position: relative; flex-grow: 1;">
+                    <div class="q-progress-fill" id="qProgressFill" style="height: 100%; background: var(--gold); border-radius: 99px; box-shadow: 0 0 10px var(--gold); width: 0%; transition: width 0.3s var(--ease-out);"></div>
+                </div>
+                <span id="qNumDisplayLarge" style="font-size: 11px; font-weight: 700; color: var(--ink-soft); min-width: 70px; text-align: right;">1 dari 10</span>
+            </div>
+            <button class="bookmark-btn" onclick="toggleDoubt()" style="background:none; border:none; color:var(--ink-faint); font-size:18px; cursor:pointer; transition:all 0.2s;" id="cardBookmarkBtn" title="Tandai Ragu ⭐">⭐</button>
+        </div>
+        <!-- Wrapper for sliding animation -->
+        <div class="card-slide-container" id="cardSlideContainer">
+            <div id="questionMetadataContainer" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom: 20px;"></div>
+            <div id="questionImageContainer" style="display:none; text-align:center; margin-bottom:20px;"></div>
+            <div class="question-text" id="questionText"></div>
+            <!-- MCQ Mode Options -->
+            <div class="options" id="optionsContainer"></div>
+            <div id="pembahasanBox" style="display:none;"></div>
         </div>
     </div>
-    <div id="questionMetadataContainer" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom: 20px;"></div>
-    <div id="questionImageContainer" style="display:none; text-align:center; margin-bottom:20px;"></div>
-    <div class="question-text" id="questionText"></div>
-    <!-- Hint/Guess Mode -->
-    <div id="hintModeContainer" style="display:none;">
-        <div id="hintList" style="margin-bottom:20px; display:flex; flex-direction:column; gap:10px;"></div>
-        <input autocomplete="off" class="guess-input" id="guessInputField" placeholder="Ketik jawaban Anda..." type="text"/>
-    </div>
-    <!-- MCQ Mode -->
-    <div class="options" id="optionsContainer"></div>
-    <div id="pembahasanBox" style="display:none;"></div>
-</div> <!-- Closed .card here -->
-<div class="action-row-container">
-    <button class="btn btn-ghost" id="btnPrev" onclick="navigateQuestion(-1)">← <span class="btn-text">Sebelumnya</span></button>
-    <div style="display:flex; gap:8px; align-items:center;">
-        <button class="btn btn-outline-accent" id="btnMintaHint" onclick="revealNextHint()" style="display:none;">💡 <span class="btn-text">HINT</span></button>
-        <button class="btn btn-primary" id="btnCekJawaban" onclick="cekJawabanSekarang()" style="display:none;">CHECK<span class="btn-text"> JAWABAN</span></button>
-        <label class="btn btn-ghost doubt-toggle" id="doubtToggle" style="margin:0; padding:10px 16px; display:inline-flex; align-items:center; gap:8px; border:1px solid var(--gold-line); border-radius:12px; background:rgba(255,255,255,0.03); color:var(--ink-soft); cursor:pointer;">
-            <input id="checkDoubt" onchange="toggleDoubt()" style="display:none;" type="checkbox"/>
-            <span class="btn-text">Tandai Ragu </span>⭐
-        </label>
-    </div>
-    <button class="btn btn-primary" id="btnNext" onclick="navigateQuestion(1)"><span class="btn-text">Selanjutnya</span> →</button>
-</div>
-</div>
+
+    <!-- 3D Flashcard Container -->
+    <div class="flashcard-container" id="mainFlashcardContainer" style="display: none;">
+        <div class="flashcard-card" id="flashcardCard">
+            <!-- Front Side -->
+            <div class="flashcard-face flashcard-front">
+                <div class="swipe-overlay" id="swipeLeftOverlay">SULIT</div>
+                <div class="swipe-overlay" id="swipeRightOverlay">MUDAH</div>
+                <div class="flashcard-header">
+                    <div class="flashcard-tags" id="fcTags" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+                    <button class="bookmark-btn" onclick="toggleDoubt()" id="fcBookmarkBtn" style="background:none; border:none; color:var(--ink-faint); font-size:18px; cursor:pointer; transition:all 0.2s;" title="Tandai Ragu ⭐">⭐</button>
+                </div>
+                <div class="flashcard-body">
+                    <div class="flashcard-image" id="fcImageContainer" style="text-align:center; margin-bottom:16px;"></div>
+                    <div class="question-text" id="fcQuestionText" style="font-size: 18px; font-weight: 700; line-height: 1.8; color: #fff;"></div>
+                    <div class="flashcard-hints-section" style="margin-top: 16px;">
+                        <button class="btn btn-outline-accent" id="btnFcShowHint" onclick="revealNextHintFC()" style="font-size:11px; padding: 6px 12px; height: auto;">💡 Tampilkan Petunjuk</button>
+                        <div id="fcHintList" style="margin-top: 12px; display:flex; flex-direction:column; gap:8px;"></div>
+                    </div>
+                </div>
+                <div class="flashcard-footer">
+                    <button class="btn btn-primary" onclick="flipFlashcard(true)" style="width: 100%;">🔄 Balik Kartu</button>
+                </div>
+            </div>
+            <!-- Back Side -->
+            <div class="flashcard-face flashcard-back">
+                <div class="flashcard-header">
+                    <span style="font-weight: 800; font-size: 11px; color: var(--gold); letter-spacing: 1px; text-transform: uppercase;">KUNCI JAWABAN & PEMBAHASAN</span>
+                    <button class="bookmark-btn" onclick="toggleDoubt()" id="fcBookmarkBtnBack" style="background:none; border:none; color:var(--ink-faint); font-size:18px; cursor:pointer; transition:all 0.2s;" title="Tandai Ragu ⭐">⭐</button>
+                </div>
+                <div class="flashcard-body">
+                    <div class="flashcard-answer-key" id="fcAnswerKey" style="font-size: 20px; font-weight: 800; color: var(--gold); text-align: center; margin-bottom: 20px; padding: 12px; border: 1.5px dashed var(--gold-line); border-radius: 12px; background: rgba(212,168,67,0.03);"></div>
+                    <div class="flashcard-explanation" id="fcExplanation" style="font-size: 14px; line-height: 1.6; color: var(--ink-soft); margin-bottom: 12px;"></div>
+                    <div id="fcPembahasanBox" style="margin-top: 16px;"></div>
+                </div>
+                <div class="flashcard-footer">
+                    <div class="self-eval-title">Evaluasi Diri (Spaced Repetition):</div>
+                    <div class="self-eval-row">
+                        <button class="btn self-eval-btn btn-rose" onclick="submitSelfEvaluation(2)">❌ SULIT</button>
+                        <button class="btn self-eval-btn btn-amber" onclick="submitSelfEvaluation(4)">🔄 SEDANG</button>
+                        <button class="btn self-eval-btn btn-emerald" onclick="submitSelfEvaluation(5)">✅ MUDAH</button>
+                      </div>
+                      <button class="btn btn-ghost" onclick="flipFlashcard(false)" style="margin-top: 8px; font-size:11px; padding: 4px 10px; height: auto;">🔄 Balik Depan</button>
+                  </div>
+              </div>
+          </div>
+      </div>
+  
+      <!-- Bottom Navigation Action Bar -->
+      <div class="action-row-container">
+          <button class="btn btn-ghost" id="btnPrev" onclick="navigateQuestion(-1)">← <span class="btn-text">Sebelumnya</span></button>
+          <div style="display:flex; gap:8px; align-items:center;">
+              <button class="btn btn-primary" id="btnCekJawaban" onclick="cekJawabanSekarang()" style="display:none;">CHECK<span class="btn-text"> JAWABAN</span></button>
+          </div>
+          <button class="btn btn-primary" id="btnNext" onclick="navigateQuestion(1)"><span class="btn-text">Selanjutnya</span> →</button>
+      </div>
+  </div>
 <div class="sidebar">
 <div class="card" style="padding: 20px;">
     <div class="" style="font-size:11px; color:var(--gold); font-weight:800; letter-spacing:1.5px; margin-bottom:16px;">STATISTIK LANGSUNG</div>
@@ -829,6 +1083,10 @@
     let currentQuiz = [], currentIndex = 0;
     let userAnswers = [], doubtStatus = [], isRevealed = [], visibleHints = [];
     let currentQuizKey = '';
+    let quizTimerInterval = null;
+    let quizTimeRemaining = 0;
+    let quizTimerDuration = 60;
+    let quizTimerEnabled = false;
 
     function parseDataset(data) {
         if (!data) return null;
@@ -1455,6 +1713,9 @@
             }
         }
 
+        quizTimerEnabled = document.getElementById('enableQuizTimer').checked;
+        quizTimerDuration = parseInt(document.getElementById('quizTimerDuration').value, 10) || 60;
+
         currentQuiz = pool;
         userAnswers = new Array(pool.length).fill(null);
         doubtStatus = new Array(pool.length).fill(false);
@@ -1471,6 +1732,7 @@
     }
 
     function goHome() {
+        stopQuestionTimer();
         document.getElementById('cbtPage').style.display = 'none';
         document.getElementById('resultPage').style.display = 'none';
         document.getElementById('setupPage').style.display = 'block';
@@ -1514,6 +1776,214 @@
         }
     }
 
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let isDragging = false;
+
+    function saveCardSM2Progress(card) {
+        const keys = Object.keys(questionDatabase);
+        for (let key of keys) {
+            const list = questionDatabase[key];
+            if (Array.isArray(list)) {
+                const found = list.find(q => (q.pertanyaan || q.question || q.clue) === (card.pertanyaan || card.question || card.clue));
+                if (found) {
+                    found.ease = card.ease;
+                    found.reps = card.reps;
+                    found.interval = card.interval;
+                    localStorage.setItem('questionDB', JSON.stringify(questionDatabase));
+                    break;
+                }
+            }
+        }
+    }
+
+    function submitSelfEvaluation(score) {
+        const q = currentQuiz[currentIndex];
+        
+        let ease = q.ease || 2.5;
+        let reps = q.reps || 0;
+        let interval = q.interval || 1;
+
+        if (score >= 3) {
+            if (reps === 0) {
+                interval = 1;
+            } else if (reps === 1) {
+                interval = 6;
+            } else {
+                interval = Math.round(interval * ease);
+            }
+            reps++;
+        } else {
+            reps = 0;
+            interval = 1;
+        }
+
+        ease = ease + (0.1 - (5 - score) * (0.08 + (5 - score) * 0.02));
+        ease = Math.max(1.3, ease);
+
+        q.ease = ease;
+        q.reps = reps;
+        q.interval = interval;
+
+        saveCardSM2Progress(q);
+
+        userAnswers[currentIndex] = score >= 3 ? "mudah/sedang" : "sulit";
+        isRevealed[currentIndex] = true;
+
+        updateNavGridUI();
+        updateSidebarStats();
+        saveSession();
+
+        if (score === 2) {
+            showToast('Ditandai Sulit: Kartu akan diulang di akhir kuis!', '🔄');
+            currentQuiz.push({ ...q });
+            userAnswers.push(null);
+            doubtStatus.push(false);
+            isRevealed.push(false);
+            visibleHints.push(0);
+            
+            buildNavGrid();
+            updateSidebarStats();
+        } else {
+            showToast('Kartu dikuasai!', '✅');
+        }
+
+        animateCardFlyOut(score >= 3 ? 'right' : 'left');
+    }
+
+    function animateCardFlyOut(direction) {
+        const card = document.getElementById('flashcardCard');
+        if (!card) return;
+
+        card.style.transition = 'transform 0.4s ease-out, opacity 0.4s ease-out';
+        const rotateAngle = direction === 'right' ? 15 : -15;
+        const translateX = direction === 'right' ? window.innerWidth : -window.innerWidth;
+        card.style.transform = `translateX(${translateX}px) rotate(${rotateAngle}deg)`;
+        card.style.opacity = '0';
+
+        setTimeout(() => {
+            if (currentIndex < currentQuiz.length - 1) {
+                currentIndex++;
+                loadQuestion(currentIndex);
+                
+                card.style.transition = 'none';
+                card.style.transform = 'translateY(-100px) scale(0.9)';
+                card.style.opacity = '0';
+                
+                card.getBoundingClientRect();
+                
+                card.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease';
+                card.style.transform = 'translateY(0) scale(1)';
+                card.style.opacity = '1';
+            } else {
+                openFinishModal();
+                card.style.transition = 'none';
+                card.style.transform = 'none';
+                card.style.opacity = '1';
+            }
+        }, 400);
+    }
+
+    function flipFlashcard(isFlipped) {
+        const card = document.getElementById('flashcardCard');
+        if (card) {
+            if (isFlipped) {
+                card.classList.add('flipped');
+            } else {
+                card.classList.remove('flipped');
+            }
+        }
+    }
+
+    function revealNextHintFC() {
+        visibleHints[currentIndex]++;
+        loadQuestion(currentIndex);
+        saveSession();
+    }
+
+    function initFlashcardGestures() {
+        const card = document.getElementById('flashcardCard');
+        if (!card) return;
+
+        const overlayLeft = document.getElementById('swipeLeftOverlay');
+        const overlayRight = document.getElementById('swipeRightOverlay');
+
+        const onDragStart = (e) => {
+            if (card.classList.contains('flipped')) return;
+            
+            isDragging = true;
+            const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+            dragStartX = clientX;
+            dragStartY = clientY;
+            card.style.transition = 'none';
+        };
+
+        const onDragMove = (e) => {
+            if (!isDragging) return;
+            
+            const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+            
+            const deltaX = clientX - dragStartX;
+            const deltaY = clientY - dragStartY;
+            
+            const rotate = deltaX * 0.05;
+            card.style.transform = `translate(${deltaX}px, ${deltaY}px) rotate(${rotate}deg)`;
+
+            if (deltaX < -60) {
+                if (overlayLeft) overlayLeft.classList.add('swipe-left-active');
+                if (overlayRight) overlayRight.classList.remove('swipe-right-active');
+            } else if (deltaX > 60) {
+                if (overlayRight) overlayRight.classList.add('swipe-right-active');
+                if (overlayLeft) overlayLeft.classList.remove('swipe-left-active');
+            } else {
+                if (overlayLeft) overlayLeft.classList.remove('swipe-left-active');
+                if (overlayRight) overlayRight.classList.remove('swipe-right-active');
+            }
+        };
+
+        const onDragEnd = (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            if (overlayLeft) overlayLeft.classList.remove('swipe-left-active');
+            if (overlayRight) overlayRight.classList.remove('swipe-right-active');
+
+            const transform = card.style.transform;
+            const match = transform.match(/translate\(([-\d\.]+)px,\s+([-\d\.]+)px\)/);
+            let deltaX = 0;
+            if (match) {
+                deltaX = parseFloat(match[1]);
+            }
+
+            if (deltaX < -120) {
+                submitSelfEvaluation(2);
+            } else if (deltaX > 120) {
+                submitSelfEvaluation(5);
+            } else {
+                card.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                card.style.transform = 'none';
+            }
+        };
+
+        // Clear existing listeners to prevent duplicate bindings
+        card.removeEventListener('mousedown', onDragStart);
+        card.removeEventListener('touchstart', onDragStart);
+
+        card.addEventListener('mousedown', onDragStart);
+        card.addEventListener('touchstart', onDragStart, { passive: true });
+
+        // Bind global drag moves and ends once
+        if (!window.hasGlobalSwipeListeners) {
+            window.addEventListener('mousemove', (e) => { if (isDragging) onDragMove(e); });
+            window.addEventListener('mouseup', (e) => { if (isDragging) onDragEnd(e); });
+            window.addEventListener('touchmove', (e) => { if (isDragging) onDragMove(e); }, { passive: false });
+            window.addEventListener('touchend', (e) => { if (isDragging) onDragEnd(e); });
+            window.hasGlobalSwipeListeners = true;
+        }
+    }
+
     function loadQuestion(idx) {
         if (!currentQuiz || currentQuiz.length === 0) {
             console.error("loadQuestion failed: currentQuiz is empty.");
@@ -1535,100 +2005,49 @@
         const kunciJawaban = q.jawaban_benar || q.answer || '';
         const isHintMode = !q.pilihan || q.pilihan.length === 0;
 
-        const numDisplay = document.getElementById('qNumDisplayLarge');
-        if (numDisplay) {
-            numDisplay.textContent = `Soal ${idx + 1} dari ${total}`;
-        }
-        document.getElementById('qProgressFill').style.width = ((idx + 1) / total * 100) + '%';
-        document.getElementById('globalProgressBar').style.width = ((idx + 1) / total * 100) + '%';
+        const mainCard = document.getElementById('mainQuestionCard');
+        const flashcardContainer = document.getElementById('mainFlashcardContainer');
+        const cbtLayout = document.querySelector('.cbt-layout');
+        const sidebar = document.querySelector('.sidebar');
 
-        const qTextEl = document.getElementById('questionText');
-        const optionsContainer = document.getElementById('optionsContainer');
-        const hintModeContainer = document.getElementById('hintModeContainer');
-        const hintList = document.getElementById('hintList');
-        const guessInput = document.getElementById('guessInputField');
-        const btnMintaHint = document.getElementById('btnMintaHint');
-        
-        const metaContainer = document.getElementById('questionMetadataContainer');
-        metaContainer.innerHTML = '';
-        if (q.metadata && typeof q.metadata === 'object') {
-            const meta = q.metadata;
-            const addBadge = (label, value, bg = 'rgba(212,175,55,0.1)', border = 'var(--gold-line)', color = 'var(--gold)') => {
-                if (!value) return;
-                const badge = document.createElement('span');
-                badge.style.display = 'inline-flex';
-                badge.style.alignItems = 'center';
-                badge.style.padding = '4px 10px';
-                badge.style.borderRadius = '99px';
-                badge.style.fontSize = '11px';
-                badge.style.fontWeight = '700';
-                badge.style.background = bg;
-                badge.style.border = `1px solid ${border}`;
-                badge.style.color = color;
-                badge.style.textTransform = 'uppercase';
-                badge.style.letterSpacing = '0.5px';
-                badge.innerHTML = `<span style="opacity:0.6; margin-right:4px;">${label}:</span> ${escHtml(value)}`;
-                metaContainer.appendChild(badge);
-            };
+        const getMetaBadgesHtml = () => {
+            let badgesHtml = '';
+            if (q.metadata && typeof q.metadata === 'object') {
+                const meta = q.metadata;
+                const makeBadge = (label, value, bg = 'rgba(212,175,55,0.1)', border = 'var(--gold-line)', color = 'var(--gold)') => {
+                    if (!value) return '';
+                    return `<span style="display:inline-flex; align-items:center; padding:4px 10px; border-radius:99px; font-size:11px; font-weight:700; background:${bg}; border:1px solid ${border}; color:${color}; text-transform:uppercase; letter-spacing:0.5px; margin-right:6px; margin-bottom:6px;"><span style="opacity:0.6; margin-right:4px;">${label}:</span> ${escHtml(value)}</span>`;
+                };
+                badgesHtml += makeBadge('BLOK', meta.blok);
+                badgesHtml += makeBadge('SKDI', meta.tingkat_kompetensi_skdi, 'rgba(16,185,129,0.1)', 'rgba(16,185,129,0.2)', 'var(--green)');
+                badgesHtml += makeBadge('SUB', meta.sub_kompetensi_klinis, 'rgba(255,255,255,0.05)', 'rgba(255,255,255,0.1)', '#fff');
+                badgesHtml += makeBadge('KOGNITIF', meta.tingkat_kognitif);
+                
+                let diffColor = 'var(--gold)';
+                let diffBg = 'rgba(212,175,55,0.1)';
+                let diffBorder = 'var(--gold-line)';
+                if (meta.tingkat_kesulitan === 'Mudah') {
+                    diffColor = 'var(--green)'; diffBg = 'rgba(16,185,129,0.1)'; diffBorder = 'rgba(16,185,129,0.2)';
+                } else if (meta.tingkat_kesulitan === 'Sulit') {
+                    diffColor = '#f43f5e'; diffBg = 'rgba(244,63,94,0.1)'; diffBorder = 'rgba(244,63,94,0.2)';
+                }
+                badgesHtml += makeBadge('KESULITAN', meta.tingkat_kesulitan, diffBg, diffBorder, diffColor);
+                
+                if (meta.kegawatdaruratan === true || String(meta.kegawatdaruratan).toLowerCase() === 'true') {
+                    badgesHtml += `<span style="display:inline-flex; align-items:center; padding:4px 10px; border-radius:99px; font-size:11px; font-weight:800; background:rgba(244,63,94,0.2); border:1px solid #f43f5e; color:#fff; margin-right:6px; margin-bottom:6px;">🚨 IGD / GAWAT DARURAT</span>`;
+                }
+                if (meta.xp) {
+                    badgesHtml += makeBadge('XP', `+${meta.xp} XP`, 'rgba(212,175,55,0.2)', 'var(--gold)', 'var(--gold)');
+                }
+            }
+            return badgesHtml;
+        };
 
-            addBadge('BLOK', meta.blok);
-            addBadge('SKDI', meta.tingkat_kompetensi_skdi, 'rgba(16,185,129,0.1)', 'rgba(16,185,129,0.2)', 'var(--green)');
-            addBadge('SUB', meta.sub_kompetensi_klinis, 'rgba(255,255,255,0.05)', 'rgba(255,255,255,0.1)', '#fff');
-            addBadge('KOGNITIF', meta.tingkat_kognitif);
-            
-            let diffColor = 'var(--gold)';
-            let diffBg = 'rgba(212,175,55,0.1)';
-            let diffBorder = 'var(--gold-line)';
-            if (meta.tingkat_kesulitan === 'Mudah') {
-                diffColor = 'var(--green)'; diffBg = 'rgba(16,185,129,0.1)'; diffBorder = 'rgba(16,185,129,0.2)';
-            } else if (meta.tingkat_kesulitan === 'Sulit') {
-                diffColor = '#ef4444'; diffBg = 'rgba(239,68,68,0.1)'; diffBorder = 'rgba(239,68,68,0.2)';
-            }
-            addBadge('KESULITAN', meta.tingkat_kesulitan, diffBg, diffBorder, diffColor);
-            
-            if (meta.kegawatdaruratan === true || String(meta.kegawatdaruratan).toLowerCase() === 'true') {
-                const emBadge = document.createElement('span');
-                emBadge.style.display = 'inline-flex';
-                emBadge.style.alignItems = 'center';
-                emBadge.style.padding = '4px 10px';
-                emBadge.style.borderRadius = '99px';
-                emBadge.style.fontSize = '11px';
-                emBadge.style.fontWeight = '800';
-                emBadge.style.background = 'rgba(239,68,68,0.2)';
-                emBadge.style.border = '1px solid #ef4444';
-                emBadge.style.color = '#fff';
-                emBadge.innerHTML = '🚨 IGD / GAWAT DARURAT';
-                metaContainer.appendChild(emBadge);
-            }
-
-            if (meta.xp) {
-                addBadge('XP', `+${meta.xp} XP`, 'rgba(212,175,55,0.2)', 'var(--gold)', 'var(--gold)');
-            }
-        }
-        
-        const imgContainer = document.getElementById('questionImageContainer');
         const imgUrl = q.gambar || q.image || q.image_url || q.url_gambar;
-        if (imgContainer) {
-            if (imgUrl) {
-                imgContainer.style.display = 'block';
-                imgContainer.innerHTML = `
-                    <div style="position: relative; display: inline-block; max-width: 100%; margin-bottom: 12px; cursor: zoom-in;" onclick="openLightbox('${imgUrl}')">
-                        <img src="${imgUrl}" style="max-width: 100%; max-height: 480px; border-radius: var(--radius); border: 1.5px solid var(--gold-line); object-fit: contain; display: block;" />
-                        <div style="margin-top: 8px; font-size: 11px; color: var(--gold); font-weight: 700; text-align: center; display: flex; align-items: center; justify-content: center; gap: 4px;">
-                            🔍 Sentuh gambar untuk memperbesar
-                        </div>
-                    </div>
-                `;
-            } else {
-                imgContainer.style.display = 'none';
-                imgContainer.innerHTML = '';
-            }
-        }
 
         let rawText = q.pertanyaan || q.question || (isHintMode ? "Identifikasi objek berdasarkan petunjuk strategis berikut:" : "");
         let vignette = "";
         let questionPart = "";
-        
         const splitKeywords = ["Pertanyaan:", "Pertanyaan :", "Pertanyaan\n", "Pertanyaan \n"];
         let splitIdx = -1;
         let chosenKeyword = "";
@@ -1640,7 +2059,6 @@
                 break;
             }
         }
-        
         if (splitIdx !== -1) {
             vignette = rawText.substring(0, splitIdx).trim();
             questionPart = rawText.substring(splitIdx + chosenKeyword.length).trim();
@@ -1652,144 +2070,296 @@
         if (vignette) {
             questionHtml = `
                 <div class="vignette-text" style="font-size: 16px; line-height: 1.8; color: var(--slate-200); margin-bottom: 24px; font-weight: 400;">${vignette}</div>
-                <div class="question-title" style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 16px; border-top: 1px solid var(--gold-line); padding-top: 16px;">${questionPart}</div>
+                <div class="question-title" style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 16px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">${questionPart}</div>
             `;
         } else {
             questionHtml = `
                 <div class="question-title" style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 16px;">${questionPart}</div>
             `;
         }
-        qTextEl.innerHTML = questionHtml;
-        optionsContainer.innerHTML = '';
-        hintList.innerHTML = '';
-        
-        if (isHintMode) {
-            optionsContainer.style.display = 'none';
-            hintModeContainer.style.display = 'block';
-            const hints = [];
-            for (let i = 1; i <= 10; i++) if (q[`petunjuk_${i}`]) hints.push(q[`petunjuk_${i}`]);
-            hints.slice(0, visibleHints[idx]).forEach((text, hIdx) => {
-                const hCard = document.createElement('div');
-                hCard.style.padding = '12px 16px';
-                hCard.style.background = 'rgba(212,175,55,0.05)';
-                hCard.style.border = '1px solid var(--gold-line)';
-                hCard.style.borderRadius = '8px';
-                hCard.style.fontSize = '13px';
-                hCard.style.color = '#fff';
-                hCard.innerHTML = `<span style="color:var(--gold); font-weight:800; margin-right:8px;">HINT ${hIdx+1}</span> ${text}`;
-                hintList.appendChild(hCard);
-            });
-            btnMintaHint.style.display = (visibleHints[idx] < hints.length && !revealed) ? 'inline-flex' : 'none';
-            guessInput.value = userAnswers[idx] || '';
-            guessInput.disabled = revealed;
-            if (revealed) {
-                const isCorrect = checkIsCorrect(userAnswers[idx], q);
-                guessInput.style.borderColor = isCorrect ? 'var(--green)' : '#991b1b';
-                guessInput.style.background = isCorrect ? 'rgba(16,185,129,0.1)' : 'rgba(153,27,27,0.1)';
-            } else {
-                guessInput.style.borderColor = ''; guessInput.style.background = '';
-                guessInput.oninput = (e) => { userAnswers[idx] = e.target.value; updateNavGridUI(); updateSidebarStats(); saveSession(); };
-            }
-        } else {
-            optionsContainer.style.display = 'block';
-            hintModeContainer.style.display = 'none';
-            btnMintaHint.style.display = 'none';
-            const letters = ['A', 'B', 'C', 'D', 'E'];
-            (q.pilihan || q.options || []).forEach((opt, i) => {
-                const isSelected = userAnswers[idx] === opt;
-                const isCorrect = opt === kunciJawaban;
-                let extraClass = '';
-                if (revealed) {
-                    if (isCorrect) extraClass = ' correct-ans locked';
-                    else if (isSelected) extraClass = ' wrong-ans locked';
-                    else extraClass = ' locked';
-                } else if (isSelected) extraClass = ' selected';
-                const label = document.createElement('label');
-                label.className = 'option-label' + extraClass;
-                label.innerHTML = `
-                    <input type="radio" name="opt" value="${escHtml(opt)}" ${isSelected ? 'checked' : ''} ${revealed ? 'disabled' : ''} style="display:none">
-                    <div class="option-bubble">${letters[i] || i+1}</div>
-                    <span>${opt}</span>`;
-                if (!revealed) {
-                    label.onclick = () => {
-                        userAnswers[idx] = opt;
-                        document.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
-                        label.classList.add('selected');
-                        updateNavGridUI();
-                        updateSidebarStats();
-                        saveSession();
-                    };
-                }
-                optionsContainer.appendChild(label);
-            });
-        }
 
-        document.getElementById('btnCekJawaban').style.display = revealed ? 'none' : 'inline-flex';
-        const pemBox = document.getElementById('pembahasanBox');
-        if (revealed) {
-            const isBenar = checkIsCorrect(userAnswers[idx], q);
-            let eliminasiHtml = '';
-            if (q.eliminasi_opsi && typeof q.eliminasi_opsi === 'object') {
-                eliminasiHtml = `
-                    <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
-                        <div style="font-weight: 800; font-size: 12px; color: var(--gold); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">Analisis Pilihan Jawaban:</div>
-                        <div style="display: flex; flex-direction: column; gap: 8px;">
-                `;
-                Object.entries(q.eliminasi_opsi).forEach(([optLetter, reasoning]) => {
-                    const cleanReason = String(reasoning).trim();
-                    const isCorrectReason = cleanReason.toLowerCase().startsWith('benar');
-                    const badgeColor = isCorrectReason ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.04)';
-                    const textColor = isCorrectReason ? 'var(--green)' : 'var(--red)';
-                    const borderColor = isCorrectReason ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.1)';
-                    const dotIndex = cleanReason.indexOf('.');
-                    const displayReason = dotIndex !== -1 ? cleanReason.slice(dotIndex + 1).trim() : cleanReason;
-                    
-                    eliminasiHtml += `
-                        <div style="font-size: 13px; line-height: 1.6; padding: 10px 14px; background: ${badgeColor}; border: 1px solid ${borderColor}; border-radius: 8px; display: flex; align-items: flex-start; gap: 10px;">
-                            <span style="font-weight: 900; color: ${textColor}; min-width: 20px; text-align: center; font-size: 12px; background: ${isCorrectReason ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.1)'}; border-radius: 4px; padding: 1px 4px;">${optLetter}</span>
-                            <div style="color: var(--ink-soft);"><strong style="color: ${textColor}; font-weight: 700;">${isCorrectReason ? 'BENAR' : 'SALAH'}</strong>. ${escHtml(displayReason)}</div>
+        const isDoubt = doubtStatus[idx] || false;
+
+        if (isHintMode) {
+            if (cbtLayout) {
+                cbtLayout.style.display = 'flex';
+                cbtLayout.style.justifyContent = 'center';
+            }
+            if (sidebar) sidebar.style.display = 'none';
+            if (mainCard) mainCard.style.display = 'none';
+            if (flashcardContainer) flashcardContainer.style.display = 'block';
+
+            stopQuestionTimer();
+
+            const fcTags = document.getElementById('fcTags');
+            if (fcTags) fcTags.innerHTML = getMetaBadgesHtml();
+
+            const fcBookmarkBtn = document.getElementById('fcBookmarkBtn');
+            if (fcBookmarkBtn) {
+                fcBookmarkBtn.style.color = isDoubt ? 'var(--gold)' : 'var(--ink-faint)';
+                fcBookmarkBtn.style.textShadow = isDoubt ? '0 0 10px rgba(212,168,67,0.5)' : 'none';
+            }
+
+            const fcImageContainer = document.getElementById('fcImageContainer');
+            if (fcImageContainer) {
+                if (imgUrl) {
+                    fcImageContainer.style.display = 'block';
+                    fcImageContainer.innerHTML = `
+                        <div style="position: relative; display: inline-block; max-width: 100%; cursor: zoom-in;" onclick="event.stopPropagation(); openLightbox('${imgUrl}')">
+                            <img src="${imgUrl}" style="max-width: 100%; max-height: 280px; border-radius: var(--radius); border: 1.5px solid rgba(255,255,255,0.08); object-fit: contain; display: block;" />
+                            <div style="margin-top: 8px; font-size: 10px; color: var(--gold); font-weight: 700;">
+                                🔍 Sentuh gambar untuk memperbesar
+                            </div>
                         </div>
                     `;
-                });
-                eliminasiHtml += `
-                        </div>
-                    </div>
-                `;
+                } else {
+                    fcImageContainer.style.display = 'none';
+                    fcImageContainer.innerHTML = '';
+                }
             }
 
-            pemBox.style.display = 'block';
-            pemBox.innerHTML = `
-                <div class="pembahasan-box">
-                    <div class="pembahasan-header ${isBenar ? 'correct' : 'wrong'}">
-                        ${isBenar ? 'VERIFIED: CORRECT' : 'VERIFIED: INCORRECT'}
-                    </div>
-                    <div class="pembahasan-body">
-                        <div class="pembahasan-kunci">KUNCI JAWABAN: ${escHtml(kunciJawaban)}</div>
-                        <div>${q.pembahasan || q.explanation || 'Analisis teknis tidak tersedia for this item.'}</div>
-                        ${eliminasiHtml}
-                    </div>
-                </div>`;
-        } else pemBox.style.display = 'none';
+            const fcQuestionText = document.getElementById('fcQuestionText');
+            if (fcQuestionText) fcQuestionText.innerHTML = questionHtml;
 
-        document.getElementById('checkDoubt').checked = doubtStatus[idx];
-        document.getElementById('doubtToggle').className = 'doubt-toggle' + (doubtStatus[idx] ? ' active' : '');
-        document.getElementById('btnPrev').disabled = idx === 0;
-        const btnNext = document.getElementById('btnNext');
-        if (idx === total - 1) {
-            btnNext.innerHTML = '🏁 <span class="btn-text">SELESAIKAN</span>';
-            btnNext.className = 'btn btn-danger';
-            btnNext.onclick = openFinishModal;
+            const fcHintList = document.getElementById('fcHintList');
+            const btnFcShowHint = document.getElementById('btnFcShowHint');
+            if (fcHintList) {
+                fcHintList.innerHTML = '';
+                const hints = [];
+                for (let i = 1; i <= 10; i++) if (q[`petunjuk_${i}`]) hints.push(q[`petunjuk_${i}`]);
+                hints.slice(0, visibleHints[idx]).forEach((text, hIdx) => {
+                    const hCard = document.createElement('div');
+                    hCard.style.padding = '12px 16px';
+                    hCard.style.background = 'rgba(212,175,55,0.05)';
+                    hCard.style.border = '1px solid rgba(212,168,67,0.15)';
+                    hCard.style.borderRadius = '8px';
+                    hCard.style.fontSize = '13px';
+                    hCard.style.color = '#fff';
+                    hCard.innerHTML = `<span style="color:var(--gold); font-weight:800; margin-right:8px;">HINT ${hIdx+1}</span> ${text}`;
+                    fcHintList.appendChild(hCard);
+                });
+                if (btnFcShowHint) {
+                    btnFcShowHint.style.display = (visibleHints[idx] < hints.length && !revealed) ? 'inline-flex' : 'none';
+                }
+            }
+
+            const fcBookmarkBtnBack = document.getElementById('fcBookmarkBtnBack');
+            if (fcBookmarkBtnBack) {
+                fcBookmarkBtnBack.style.color = isDoubt ? 'var(--gold)' : 'var(--ink-faint)';
+                fcBookmarkBtnBack.style.textShadow = isDoubt ? '0 0 10px rgba(212,168,67,0.5)' : 'none';
+            }
+
+            const fcAnswerKey = document.getElementById('fcAnswerKey');
+            if (fcAnswerKey) fcAnswerKey.innerHTML = escHtml(kunciJawaban);
+
+            const fcExplanation = document.getElementById('fcExplanation');
+            if (fcExplanation) fcExplanation.innerHTML = q.pembahasan || q.explanation || 'Analisis teknis tidak tersedia untuk item ini.';
+
+            const fcPembahasanBox = document.getElementById('fcPembahasanBox');
+            if (fcPembahasanBox) {
+                fcPembahasanBox.innerHTML = '';
+                if (q.eliminasi_opsi && typeof q.eliminasi_opsi === 'object') {
+                    let elimHtml = `
+                        <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
+                            <div style="font-weight: 800; font-size: 12px; color: var(--gold); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">Analisis Pilihan Jawaban:</div>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                    `;
+                    Object.entries(q.eliminasi_opsi).forEach(([optLetter, reasoning]) => {
+                        const cleanReason = String(reasoning).trim();
+                        const isCorrectReason = cleanReason.toLowerCase().startsWith('benar');
+                        const badgeColor = isCorrectReason ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.04)';
+                        const textColor = isCorrectReason ? 'var(--green)' : 'var(--red)';
+                        const borderColor = isCorrectReason ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.1)';
+                        const dotIndex = cleanReason.indexOf('.');
+                        const displayReason = dotIndex !== -1 ? cleanReason.slice(dotIndex + 1).trim() : cleanReason;
+                        
+                        elimHtml += `
+                            <div style="font-size: 13px; line-height: 1.6; padding: 10px 14px; background: ${badgeColor}; border: 1px solid ${borderColor}; border-radius: 8px; display: flex; align-items: flex-start; gap: 10px;">
+                                <span style="font-weight: 900; color: ${textColor}; min-width: 20px; text-align: center; font-size: 12px; background: ${isCorrectReason ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.1)'}; border-radius: 4px; padding: 1px 4px;">${optLetter}</span>
+                                <div style="color: var(--ink-soft);"><strong style="color: ${textColor}; font-weight: 700;">${isCorrectReason ? 'BENAR' : 'SALAH'}</strong>. ${escHtml(displayReason)}</div>
+                            </div>
+                        `;
+                    });
+                    elimHtml += `</div></div>`;
+                    fcPembahasanBox.innerHTML = elimHtml;
+                }
+            }
+
+            const fcCard = document.getElementById('flashcardCard');
+            if (fcCard) {
+                if (revealed) {
+                    fcCard.classList.add('flipped');
+                } else {
+                    fcCard.classList.remove('flipped');
+                }
+            }
+
+            initFlashcardGestures();
+
         } else {
-            btnNext.innerHTML = '<span class="btn-text">Selanjutnya</span> →';
-            btnNext.className = 'btn btn-primary';
-            btnNext.onclick = () => navigateQuestion(1);
+            if (cbtLayout) {
+                cbtLayout.style.display = 'grid';
+                cbtLayout.style.justifyContent = 'stretch';
+            }
+            if (sidebar) sidebar.style.display = 'block';
+            if (mainCard) mainCard.style.display = 'block';
+            if (flashcardContainer) flashcardContainer.style.display = 'none';
+
+            const qNumDisplayLarge = document.getElementById('qNumDisplayLarge');
+            if (qNumDisplayLarge) qNumDisplayLarge.textContent = `Soal ${idx + 1}/${total}`;
+
+            const qProgressFill = document.getElementById('qProgressFill');
+            if (qProgressFill) qProgressFill.style.width = ((idx + 1) / total * 100) + '%';
+
+            const globalProgressBar = document.getElementById('globalProgressBar');
+            if (globalProgressBar) globalProgressBar.style.width = ((idx + 1) / total * 100) + '%';
+
+            const progressPercent = document.getElementById('progressPercent');
+            if (progressPercent) progressPercent.textContent = Math.round((idx + 1) / total * 100) + '%';
+
+            const cardBookmarkBtn = document.getElementById('cardBookmarkBtn');
+            if (cardBookmarkBtn) {
+                cardBookmarkBtn.style.color = isDoubt ? 'var(--gold)' : 'var(--ink-faint)';
+                cardBookmarkBtn.style.textShadow = isDoubt ? '0 0 10px rgba(212,168,67,0.5)' : 'none';
+            }
+
+            const metaContainer = document.getElementById('questionMetadataContainer');
+            if (metaContainer) metaContainer.innerHTML = getMetaBadgesHtml();
+
+            const imgContainer = document.getElementById('questionImageContainer');
+            if (imgContainer) {
+                if (imgUrl) {
+                    imgContainer.style.display = 'block';
+                    imgContainer.innerHTML = `
+                        <div style="position: relative; display: inline-block; max-width: 100%; margin-bottom: 12px; cursor: zoom-in;" onclick="openLightbox('${imgUrl}')">
+                            <img src="${imgUrl}" style="max-width: 100%; max-height: 480px; border-radius: var(--radius); border: 1.5px solid rgba(255,255,255,0.08); object-fit: contain; display: block;" />
+                            <div style="margin-top: 8px; font-size: 11px; color: var(--gold); font-weight: 700; text-align: center; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                🔍 Sentuh gambar untuk memperbesar
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    imgContainer.style.display = 'none';
+                    imgContainer.innerHTML = '';
+                }
+            }
+
+            const qTextEl = document.getElementById('questionText');
+            if (qTextEl) qTextEl.innerHTML = questionHtml;
+
+            const optionsContainer = document.getElementById('optionsContainer');
+            if (optionsContainer) {
+                optionsContainer.innerHTML = '';
+                const letters = ['A', 'B', 'C', 'D', 'E'];
+                (q.pilihan || q.options || []).forEach((opt, i) => {
+                    const isSelected = userAnswers[idx] === opt;
+                    const isCorrect = opt === kunciJawaban;
+                    let extraClass = '';
+                    if (revealed) {
+                        if (isCorrect) extraClass = ' correct-ans locked';
+                        else if (isSelected) extraClass = ' wrong-ans locked';
+                        else extraClass = ' locked';
+                    } else if (isSelected) extraClass = ' selected';
+
+                    const label = document.createElement('label');
+                    label.className = 'option-label' + extraClass;
+                    label.innerHTML = `
+                        <input type="radio" name="opt" value="${escHtml(opt)}" ${isSelected ? 'checked' : ''} ${revealed ? 'disabled' : ''} style="display:none">
+                        <div class="option-bubble">${letters[i] || i+1}</div>
+                        <span>${opt}</span>`;
+                    if (!revealed) {
+                        label.onclick = () => {
+                            userAnswers[idx] = opt;
+                            document.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
+                            label.classList.add('selected');
+                            updateNavGridUI();
+                            updateSidebarStats();
+                            saveSession();
+                        };
+                    }
+                    optionsContainer.appendChild(label);
+                });
+            }
+
+            const pemBox = document.getElementById('pembahasanBox');
+            if (pemBox) {
+                if (revealed) {
+                    const isBenar = checkIsCorrect(userAnswers[idx], q);
+                    let eliminasiHtml = '';
+                    if (q.eliminasi_opsi && typeof q.eliminasi_opsi === 'object') {
+                        eliminasiHtml = `
+                            <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
+                                <div style="font-weight: 800; font-size: 12px; color: var(--gold); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">Analisis Pilihan Jawaban:</div>
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                        `;
+                        Object.entries(q.eliminasi_opsi).forEach(([optLetter, reasoning]) => {
+                            const cleanReason = String(reasoning).trim();
+                            const isCorrectReason = cleanReason.toLowerCase().startsWith('benar');
+                            const badgeColor = isCorrectReason ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.04)';
+                            const textColor = isCorrectReason ? 'var(--green)' : 'var(--red)';
+                            const borderColor = isCorrectReason ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.1)';
+                            const dotIndex = cleanReason.indexOf('.');
+                            const displayReason = dotIndex !== -1 ? cleanReason.slice(dotIndex + 1).trim() : cleanReason;
+                            
+                            eliminasiHtml += `
+                                <div style="font-size: 13px; line-height: 1.6; padding: 10px 14px; background: ${badgeColor}; border: 1px solid ${borderColor}; border-radius: 8px; display: flex; align-items: flex-start; gap: 10px;">
+                                    <span style="font-weight: 900; color: ${textColor}; min-width: 20px; text-align: center; font-size: 12px; background: ${isCorrectReason ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.1)'}; border-radius: 4px; padding: 1px 4px;">${optLetter}</span>
+                                    <div style="color: var(--ink-soft);"><strong style="color: ${textColor}; font-weight: 700;">${isCorrectReason ? 'BENAR' : 'SALAH'}</strong>. ${escHtml(displayReason)}</div>
+                                </div>
+                            `;
+                        });
+                        eliminasiHtml += `</div></div>`;
+                    }
+
+                    pemBox.style.display = 'block';
+                    const isBenarGrading = checkIsCorrect(userAnswers[idx], q);
+                    pemBox.innerHTML = `
+                        <div class="pembahasan-box">
+                            <div class="pembahasan-header ${isBenarGrading ? 'correct' : 'wrong'}">
+                                ${isBenarGrading ? 'VERIFIED: CORRECT' : 'VERIFIED: INCORRECT'}
+                            </div>
+                            <div class="pembahasan-body">
+                                <div class="pembahasan-kunci">KUNCI JAWABAN: ${escHtml(kunciJawaban)}</div>
+                                <div>${q.pembahasan || q.explanation || 'Analisis teknis tidak tersedia untuk item ini.'}</div>
+                                ${eliminasiHtml}
+                            </div>
+                        </div>`;
+                } else {
+                    pemBox.style.display = 'none';
+                }
+            }
+
+            startQuestionTimer();
         }
+
+        document.getElementById('btnPrev').disabled = idx === 0;
+        document.getElementById('btnCekJawaban').style.display = (isHintMode || revealed) ? 'none' : 'inline-flex';
+        
+        const btnNext = document.getElementById('btnNext');
+        if (btnNext) {
+            if (idx === total - 1) {
+                btnNext.innerHTML = '🏁 <span class="btn-text">SELESAIKAN</span>';
+                btnNext.className = 'btn btn-danger';
+                btnNext.onclick = openFinishModal;
+            } else {
+                btnNext.innerHTML = '<span class="btn-text">Selanjutnya</span> →';
+                btnNext.className = 'btn btn-primary';
+                btnNext.onclick = () => navigateQuestion(1);
+            }
+        }
+
         updateNavGridUI();
         updateSidebarStats();
     }
 
     function checkIsCorrect(answer, question) {
         if (!answer) return false;
+
+        const isHintMode = !question.pilihan || question.pilihan.length === 0;
+        if (isHintMode) {
+            if (answer === "mudah/sedang") return true;
+            if (answer === "sulit") return false;
+        }
 
         // 1. Helper function for clean normalization
         const normalize = (str) => {
@@ -1963,23 +2533,125 @@
 
     function cekJawabanSekarang() {
         if (!userAnswers[currentIndex]) { showToast('Pilih jawaban untuk verifikasi!', '⚠️'); return; }
+        stopQuestionTimer();
         isRevealed[currentIndex] = true;
         loadQuestion(currentIndex); 
         saveSession();
     }
 
+    function startQuestionTimer() {
+        stopQuestionTimer();
+        if (!quizTimerEnabled || isRevealed[currentIndex]) {
+            const timerContainer = document.querySelector('.timer-container');
+            if (timerContainer) timerContainer.style.display = 'none';
+            return;
+        }
+
+        const timerContainer = document.querySelector('.timer-container');
+        if (timerContainer) timerContainer.style.display = 'flex';
+
+        quizTimeRemaining = quizTimerDuration;
+        updateTimerDisplay();
+
+        quizTimerInterval = setInterval(() => {
+            quizTimeRemaining--;
+            updateTimerDisplay();
+
+            if (quizTimeRemaining <= 0) {
+                stopQuestionTimer();
+                handleTimerExpiry();
+            }
+        }, 1000);
+    }
+
+    function stopQuestionTimer() {
+        if (quizTimerInterval) {
+            clearInterval(quizTimerInterval);
+            quizTimerInterval = null;
+        }
+    }
+
+    function updateTimerDisplay() {
+        const timerText = document.getElementById('quizTimer');
+        const timerBar = document.getElementById('timerBarInner');
+        if (timerText) {
+            const mins = Math.floor(quizTimeRemaining / 60);
+            const secs = quizTimeRemaining % 60;
+            timerText.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        if (timerBar) {
+            const percentage = (quizTimeRemaining / quizTimerDuration) * 100;
+            timerBar.style.width = percentage + '%';
+            
+            if (quizTimeRemaining < 10) {
+                timerBar.style.background = 'var(--red)';
+                timerBar.style.boxShadow = '0 0 8px var(--red)';
+            } else {
+                timerBar.style.background = 'var(--gold)';
+                timerBar.style.boxShadow = 'none';
+            }
+        }
+    }
+
+    function handleTimerExpiry() {
+        showToast('Waktu habis untuk soal ini!', '⏰');
+        isRevealed[currentIndex] = true;
+        if (!userAnswers[currentIndex]) {
+            userAnswers[currentIndex] = ""; 
+        }
+        loadQuestion(currentIndex);
+        saveSession();
+    }
+
     function toggleDoubt() {
-        doubtStatus[currentIndex] = document.getElementById('checkDoubt').checked;
-        document.getElementById('doubtToggle').className = 'doubt-toggle' + (doubtStatus[currentIndex] ? ' active' : '');
+        const idx = currentIndex;
+        doubtStatus[idx] = !doubtStatus[idx];
+        
+        const cardBookmarkBtn = document.getElementById('cardBookmarkBtn');
+        const fcBookmarkBtn = document.getElementById('fcBookmarkBtn');
+        const fcBookmarkBtnBack = document.getElementById('fcBookmarkBtnBack');
+        
+        const activeColor = 'var(--gold)';
+        const inactiveColor = 'var(--ink-faint)';
+        
+        [cardBookmarkBtn, fcBookmarkBtn, fcBookmarkBtnBack].forEach(btn => {
+            if (btn) {
+                btn.style.color = doubtStatus[idx] ? activeColor : inactiveColor;
+                btn.style.textShadow = doubtStatus[idx] ? '0 0 10px rgba(212,168,67,0.5)' : 'none';
+            }
+        });
+        
         updateNavGridUI();
         updateSidebarStats();
         saveSession();
     }
 
-    function navigateQuestion(step) {
-        const next = currentIndex + step;
-        if (next >= 0 && next < currentQuiz.length) {
-            loadQuestion(next);
+    function navigateQuestion(dir) {
+        const newIdx = currentIndex + dir;
+        if (newIdx < 0 || newIdx >= currentQuiz.length) return;
+        
+        const isHintMode = !currentQuiz[currentIndex].pilihan || currentQuiz[currentIndex].pilihan.length === 0;
+        if (isHintMode) {
+            currentIndex = newIdx;
+            loadQuestion(currentIndex);
+            saveSession();
+            return;
+        }
+        
+        const cardBody = document.getElementById('cardSlideContainer');
+        if (cardBody) {
+            cardBody.classList.add(dir > 0 ? 'slide-out-left' : 'slide-out-right');
+            setTimeout(() => {
+                currentIndex = newIdx;
+                loadQuestion(currentIndex);
+                cardBody.className = 'card-slide-container ' + (dir > 0 ? 'slide-in-right' : 'slide-in-left');
+                cardBody.getBoundingClientRect(); // force reflow
+                cardBody.className = 'card-slide-container';
+                saveSession();
+            }, 250);
+        } else {
+            currentIndex = newIdx;
+            loadQuestion(currentIndex);
             saveSession();
         }
     }
@@ -2033,6 +2705,7 @@
     }
 
     function calculateScore() {
+        stopQuestionTimer();
         let correct = 0, empty = 0, totalXp = 0, earnedXp = 0;
         currentQuiz.forEach((q, i) => {
             const qXp = (q.metadata && q.metadata.xp) ? parseInt(q.metadata.xp, 10) : 0;
