@@ -1102,14 +1102,14 @@
 
     function parseDataset(data) {
         if (!data) return null;
-        let parsedData = data;
+        let rawObj = data;
         if (typeof data === 'string') {
             try {
-                parsedData = JSON.parse(data);
+                rawObj = JSON.parse(data);
             } catch (e) {
                 try {
                     if (typeof jsyaml !== 'undefined') {
-                        parsedData = jsyaml.load(data);
+                        rawObj = jsyaml.load(data);
                     } else {
                         return null;
                     }
@@ -1118,19 +1118,44 @@
                 }
             }
         }
-        if (!parsedData) return null;
-        let questions = parsedData.questions || parsedData.cards || parsedData;
-        if (!Array.isArray(questions)) return null;
+        if (!rawObj) return null;
+
+        let questions = [];
+        let flags = null;
+
+        if (Array.isArray(rawObj)) {
+            questions = rawObj;
+        } else if (typeof rawObj === 'object') {
+            flags = rawObj.featureFlags || null;
+            
+            const possibleKeys = ['multiple_choice', 'flashcards', 'questions', 'cards', 'short_answers', 'short_answer', 'quiz'];
+            let foundArrays = false;
+            possibleKeys.forEach(k => {
+                if (Array.isArray(rawObj[k])) {
+                    questions = questions.concat(rawObj[k]);
+                    foundArrays = true;
+                }
+            });
+            
+            if (!foundArrays) {
+                Object.values(rawObj).forEach(val => {
+                    if (Array.isArray(val)) {
+                        questions = questions.concat(val);
+                    }
+                });
+            }
+        }
+
+        if (!Array.isArray(questions) || questions.length === 0) return null;
 
         return questions.map(q => {
-            // Check if hint mode/flashcard (clue, hints array, or petunjuk_1 exists)
             if (q.clue || (q.hints && Array.isArray(q.hints)) || q.petunjuk_1) {
                 let mappedQ = {
                     pertanyaan: q.clue || q.pertanyaan || q.question || 'Identifikasi objek berdasarkan petunjuk strategis berikut:',
                     jawaban_benar: q.answer || q.jawaban_benar || q.correct_answer || '',
                     pembahasan: q.explanation || q.pembahasan || '',
                     metadata: q.metadata || null,
-                    featureFlags: data.featureFlags || null,
+                    featureFlags: flags || null,
                     gambar: q.gambar || q.image || q.image_url || q.url_gambar || null
                 };
                 if (q.hints && Array.isArray(q.hints)) {
@@ -1145,7 +1170,6 @@
                 return mappedQ;
             }
 
-            // Otherwise multiple choice
             let answerText = typeof q.correct_answer === 'number' && q.answers ? q.answers[q.correct_answer - 1] : (q.correct_answer || q.jawaban_benar || '');
             return {
                 pertanyaan: q.pertanyaan || q.question || '',
@@ -1154,6 +1178,7 @@
                 pembahasan: q.pembahasan || q.explanation || '',
                 eliminasi_opsi: q.eliminasi_opsi || null,
                 metadata: q.metadata || null,
+                featureFlags: flags || null,
                 gambar: q.gambar || q.image || q.image_url || q.url_gambar || null
             };
         });
