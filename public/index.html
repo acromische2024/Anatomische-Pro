@@ -651,7 +651,24 @@
                 display: none !important;
             }
             body.quiz-active #btnOpenNavGrid {
-                display: inline-flex !important;
+                display: flex !important;
+                position: fixed !important;
+                bottom: 85px !important;
+                right: 20px !important;
+                width: 50px !important;
+                height: 50px !important;
+                border-radius: 50% !important;
+                background: var(--gold) !important;
+                border: none !important;
+                color: #111 !important;
+                font-size: 22px !important;
+                cursor: pointer !important;
+                align-items: center !important;
+                justify-content: center !important;
+                box-shadow: 0 4px 15px rgba(212,175,55,0.4) !important;
+                z-index: 1000 !important;
+                padding: 0 !important;
+                margin: 0 !important;
             }
             .option-label {
                 padding: 14px 18px !important;
@@ -774,9 +791,12 @@
     </style>
 </head>
 <body>
-<div id="imageLightbox" onclick="closeLightbox()" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:10000; display:none; align-items:center; justify-content:center; cursor:zoom-out; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);">
-    <img id="lightboxImg" src="" style="max-width:95vw; max-height:95vh; object-fit:contain; border-radius:8px; border:2px solid var(--gold); box-shadow:0 0 30px rgba(0,0,0,0.8); transition:transform 0.3s ease;" />
-    <div style="position:absolute; top:20px; right:20px; color:#fff; font-size:24px; font-weight:bold; background:rgba(0,0,0,0.5); width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center;">✕</div>
+<div id="imageLightbox" onclick="closeLightbox()" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:10000; display:none; align-items:center; justify-content:center; cursor:zoom-out; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); touch-action:none;">
+    <img id="lightboxImg" src="" onclick="handleLightboxImgClick(event)" style="max-width:95vw; max-height:95vh; object-fit:contain; border-radius:8px; border:2px solid var(--gold); box-shadow:0 0 30px rgba(0,0,0,0.8); transition:transform 0.2s ease-out; touch-action:none; user-select:none; -webkit-user-drag:none;" />
+    <div style="position:absolute; top:20px; right:20px; color:#fff; font-size:24px; font-weight:bold; background:rgba(0,0,0,0.5); width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10002;">✕</div>
+    <div style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.6); color:var(--gold); font-size:11px; font-weight:700; padding:6px 16px; border-radius:99px; pointer-events:none; border:1px solid var(--gold-line); white-space:nowrap; z-index:10001;">
+        👆 Klik/Sentuh gambar untuk zoom & geser
+    </div>
 </div>
 <canvas id="fireCanvas" style="position:fixed; inset:0; pointer-events:none; z-index:9999; display:none;"></canvas>
 <div class="bg-orbs"><span></span><span></span><span></span></div>
@@ -1201,20 +1221,56 @@
     let isAdminMode = false;
     let adminPassword = sessionStorage.getItem('adminPassword') || '';
 
+    let isZoomed = false;
+    let scale = 1;
+    let panX = 0;
+    let panY = 0;
+    let isPanning = false;
+    let startX = 0;
+    let startY = 0;
+
     function openLightbox(url) {
         const lightbox = document.getElementById('imageLightbox');
         const img = document.getElementById('lightboxImg');
         if (lightbox && img) {
             img.src = url;
             lightbox.style.display = 'flex';
-            img.style.transform = 'scale(0.9)';
-            setTimeout(() => { img.style.transform = 'scale(1)'; }, 10);
+            isZoomed = false;
+            scale = 1;
+            panX = 0;
+            panY = 0;
+            img.style.transition = 'transform 0.2s ease-out';
+            img.style.transform = 'scale(1) translate(0px, 0px)';
+            img.style.cursor = 'zoom-in';
         }
     }
+
     function closeLightbox() {
         const lightbox = document.getElementById('imageLightbox');
         if (lightbox) {
             lightbox.style.display = 'none';
+        }
+    }
+
+    function handleLightboxImgClick(e) {
+        e.stopPropagation();
+        const img = document.getElementById('lightboxImg');
+        if (!img) return;
+
+        if (!isZoomed) {
+            isZoomed = true;
+            scale = 2.2;
+            panX = 0;
+            panY = 0;
+            img.style.transition = 'transform 0.2s ease-out';
+            img.style.transform = `scale(${scale}) translate(0px, 0px)`;
+            img.style.cursor = 'grab';
+        } else {
+            isZoomed = false;
+            scale = 1;
+            img.style.transition = 'transform 0.2s ease-out';
+            img.style.transform = 'scale(1) translate(0px, 0px)';
+            img.style.cursor = 'zoom-in';
         }
     }
 
@@ -3374,6 +3430,51 @@ selectedImage = scoreImages["88_94"][Math.floor(Math.random() * scoreImages["88_
     loadDatasetsFromServer();
     checkAdminState();
     restoreSession();
+
+    // Lightbox image panning and dragging
+    const lightboxImg = document.getElementById('lightboxImg');
+    if (lightboxImg) {
+        const startPan = (e) => {
+            if (!isZoomed) return;
+            isPanning = true;
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            startX = clientX - panX;
+            startY = clientY - panY;
+            lightboxImg.style.transition = 'none';
+            lightboxImg.style.cursor = 'grabbing';
+        };
+
+        const doPan = (e) => {
+            if (!isPanning || !isZoomed) return;
+            if (e.cancelable) e.preventDefault();
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            panX = clientX - startX;
+            panY = clientY - startY;
+            
+            const maxPanX = window.innerWidth * 0.45;
+            const maxPanY = window.innerHeight * 0.45;
+            panX = Math.max(-maxPanX, Math.min(maxPanX, panX));
+            panY = Math.max(-maxPanY, Math.min(maxPanY, panY));
+            
+            lightboxImg.style.transform = `scale(${scale}) translate(${panX / scale}px, ${panY / scale}px)`;
+        };
+
+        const endPan = () => {
+            if (!isPanning) return;
+            isPanning = false;
+            lightboxImg.style.cursor = 'grab';
+        };
+
+        lightboxImg.addEventListener('mousedown', startPan);
+        window.addEventListener('mousemove', doPan);
+        window.addEventListener('mouseup', endPan);
+
+        lightboxImg.addEventListener('touchstart', startPan, { passive: true });
+        window.addEventListener('touchmove', doPan, { passive: false });
+        window.addEventListener('touchend', endPan);
+    }
 
     // Visual Viewport Keyboard Handling for Mobile Devices
     if (window.visualViewport) {
