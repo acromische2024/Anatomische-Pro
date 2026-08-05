@@ -890,6 +890,14 @@
             <div class="question-text" id="questionText"></div>
             <!-- MCQ Mode Options -->
             <div class="options" id="optionsContainer"></div>
+            <!-- Short Answer Mode Input -->
+            <div id="hintModeContainer" style="display:none; margin-top:20px;">
+                <input type="text" class="guess-input" id="guessInputField" placeholder="Ketik jawaban Anda di sini..." autocomplete="off" style="width: 100%; padding: 18px; border-radius: var(--radius); border: 2px solid var(--gold-line); background: rgba(255,255,255,0.02); font-size: 20px; font-weight: 700; color: var(--gold); outline: none; text-align: center; margin-bottom: 24px; transition: all 0.2s;" />
+                <button class="btn btn-outline-accent btn-full" id="btnMintaHint" onclick="revealNextHint()" style="margin-top: 12px; font-size:12px; display:none;">
+                    💡 MINTA HINT / CLUE
+                </button>
+                <div id="hintList" style="margin-top: 16px; display:flex; flex-direction:column; gap:12px;"></div>
+            </div>
             <div id="pembahasanBox" style="display:none;"></div>
         </div>
     </div>
@@ -2047,6 +2055,14 @@
         const cbtLayout = document.querySelector('.cbt-layout');
         const sidebar = document.querySelector('.sidebar');
 
+        if (cbtLayout) {
+            cbtLayout.style.display = 'grid';
+            cbtLayout.style.justifyContent = 'stretch';
+        }
+        if (sidebar) sidebar.style.display = 'block';
+        if (mainCard) mainCard.style.display = 'block';
+        if (flashcardContainer) flashcardContainer.style.display = 'none';
+
         const getMetaBadgesHtml = () => {
             let badgesHtml = '';
             if (q.metadata && typeof q.metadata === 'object') {
@@ -2062,6 +2078,8 @@
                 let diffBorder = 'var(--gold-line)';
                 if (meta.tingkat_kesulitan === 'Mudah') {
                     diffColor = 'var(--green)'; diffBg = 'rgba(16,185,129,0.1)'; diffBorder = 'rgba(16,185,129,0.2)';
+                } else if (meta.tingkat_kesulitan === 'Sedang') {
+                    diffColor = 'var(--gold)'; diffBg = 'rgba(212,175,55,0.1)'; diffBorder = 'var(--gold-line)';
                 } else if (meta.tingkat_kesulitan === 'Sulit') {
                     diffColor = '#f43f5e'; diffBg = 'rgba(244,63,94,0.1)'; diffBorder = 'rgba(244,63,94,0.2)';
                 }
@@ -2111,61 +2129,70 @@
 
         const isDoubt = doubtStatus[idx] || false;
 
-        if (isHintMode) {
-            if (cbtLayout) {
-                cbtLayout.style.display = 'flex';
-                cbtLayout.style.justifyContent = 'center';
-            }
-            if (sidebar) sidebar.style.display = 'none';
-            if (mainCard) mainCard.style.display = 'none';
-            if (flashcardContainer) flashcardContainer.style.display = 'block';
+        const qNumDisplayLarge = document.getElementById('qNumDisplayLarge');
+        if (qNumDisplayLarge) qNumDisplayLarge.textContent = `Soal ${idx + 1}/${total}`;
 
-            stopQuestionTimer();
+        const qProgressFill = document.getElementById('qProgressFill');
+        if (qProgressFill) qProgressFill.style.width = ((idx + 1) / total * 100) + '%';
 
-            const fcTags = document.getElementById('fcTags');
-            if (fcTags) fcTags.innerHTML = getMetaBadgesHtml();
+        const globalProgressBar = document.getElementById('globalProgressBar');
+        if (globalProgressBar) globalProgressBar.style.width = ((idx + 1) / total * 100) + '%';
 
-            const fcBookmarkBtn = document.getElementById('fcBookmarkBtn');
-            if (fcBookmarkBtn) {
-                fcBookmarkBtn.style.color = isDoubt ? 'var(--gold)' : 'var(--ink-faint)';
-                fcBookmarkBtn.style.textShadow = isDoubt ? '0 0 10px rgba(212,168,67,0.5)' : 'none';
-            }
+        const progressPercent = document.getElementById('progressPercent');
+        if (progressPercent) progressPercent.textContent = Math.round((idx + 1) / total * 100) + '%';
 
-            const fcImageContainer = document.getElementById('fcImageContainer');
-            if (fcImageContainer) {
-                if (imgUrl) {
-                    fcImageContainer.style.display = 'block';
-                    fcImageContainer.style.textAlign = 'center';
-                    fcImageContainer.innerHTML = `
-                        <div style="position: relative; display: inline-block; max-width: 100%; margin: 0 auto; cursor: zoom-in;" onclick="event.stopPropagation(); openLightbox('${imgUrl}')">
-                            <img src="${imgUrl}" style="max-width: 100%; max-height: 240px; width: auto; height: auto; border-radius: var(--radius); border: 1.5px solid rgba(255,255,255,0.08); object-fit: contain; display: block; margin: 0 auto;" />
-                            <div style="margin-top: 8px; font-size: 10px; color: var(--gold); font-weight: 700;">
-                                🔍 Sentuh gambar untuk memperbesar
-                            </div>
+        const cardBookmarkBtn = document.getElementById('cardBookmarkBtn');
+        if (cardBookmarkBtn) {
+            cardBookmarkBtn.style.color = isDoubt ? 'var(--gold)' : 'var(--ink-faint)';
+            cardBookmarkBtn.style.textShadow = isDoubt ? '0 0 10px rgba(212,168,67,0.5)' : 'none';
+        }
+
+        const metaContainer = document.getElementById('questionMetadataContainer');
+        if (metaContainer) metaContainer.innerHTML = getMetaBadgesHtml();
+
+        const imgContainer = document.getElementById('questionImageContainer');
+        if (imgContainer) {
+            if (imgUrl) {
+                imgContainer.style.display = 'block';
+                imgContainer.style.textAlign = 'center';
+                imgContainer.innerHTML = `
+                    <div style="position: relative; display: inline-block; max-width: 100%; margin: 0 auto 12px auto; cursor: zoom-in;" onclick="openLightbox('${imgUrl}')">
+                        <img src="${imgUrl}" style="max-width: 100%; max-height: 280px; width: auto; height: auto; border-radius: var(--radius); border: 1.5px solid rgba(255,255,255,0.08); object-fit: contain; display: block; margin: 0 auto;" />
+                        <div style="margin-top: 8px; font-size: 11px; color: var(--gold); font-weight: 700; text-align: center; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                            🔍 Sentuh gambar untuk memperbesar
                         </div>
-                    `;
-                } else {
-                    fcImageContainer.style.display = 'none';
-                    fcImageContainer.innerHTML = '';
-                }
+                    </div>
+                `;
+            } else {
+                imgContainer.style.display = 'none';
+                imgContainer.innerHTML = '';
             }
+        }
 
-            const fcQuestionText = document.getElementById('fcQuestionText');
-            if (fcQuestionText) {
-                fcQuestionText.innerHTML = questionHtml;
-                fcQuestionText.querySelectorAll('img').forEach(img => {
-                    img.style.cursor = 'zoom-in';
-                    img.onclick = (e) => {
-                        e.stopPropagation();
-                        openLightbox(img.src);
-                    };
-                });
-            }
+        const qTextEl = document.getElementById('questionText');
+        if (qTextEl) {
+            qTextEl.innerHTML = questionHtml;
+            qTextEl.querySelectorAll('img').forEach(img => {
+                img.style.cursor = 'zoom-in';
+                img.onclick = (e) => {
+                    e.stopPropagation();
+                    openLightbox(img.src);
+                };
+            });
+        }
 
-            const fcHintList = document.getElementById('fcHintList');
-            const btnFcShowHint = document.getElementById('btnFcShowHint');
-            if (fcHintList) {
-                fcHintList.innerHTML = '';
+        const optionsContainer = document.getElementById('optionsContainer');
+        const hintModeContainer = document.getElementById('hintModeContainer');
+        const hintList = document.getElementById('hintList');
+        const guessInput = document.getElementById('guessInputField');
+        const btnMintaHint = document.getElementById('btnMintaHint');
+
+        if (isHintMode) {
+            if (optionsContainer) optionsContainer.style.display = 'none';
+            if (hintModeContainer) hintModeContainer.style.display = 'block';
+
+            if (hintList) {
+                hintList.innerHTML = '';
                 const hints = [];
                 for (let i = 1; i <= 10; i++) if (q[`petunjuk_${i}`]) hints.push(q[`petunjuk_${i}`]);
                 hints.slice(0, visibleHints[idx]).forEach((text, hIdx) => {
@@ -2177,129 +2204,37 @@
                     hCard.style.fontSize = '13px';
                     hCard.style.color = '#fff';
                     hCard.innerHTML = `<span style="color:var(--gold); font-weight:800; margin-right:8px;">HINT ${hIdx+1}</span> ${text}`;
-                    fcHintList.appendChild(hCard);
+                    hintList.appendChild(hCard);
                 });
-                if (btnFcShowHint) {
-                    btnFcShowHint.style.display = (visibleHints[idx] < hints.length && !revealed) ? 'inline-flex' : 'none';
+                if (btnMintaHint) {
+                    btnMintaHint.style.display = (visibleHints[idx] < hints.length && !revealed) ? 'inline-flex' : 'none';
                 }
             }
 
-            const fcBookmarkBtnBack = document.getElementById('fcBookmarkBtnBack');
-            if (fcBookmarkBtnBack) {
-                fcBookmarkBtnBack.style.color = isDoubt ? 'var(--gold)' : 'var(--ink-faint)';
-                fcBookmarkBtnBack.style.textShadow = isDoubt ? '0 0 10px rgba(212,168,67,0.5)' : 'none';
-            }
-
-            const fcAnswerKey = document.getElementById('fcAnswerKey');
-            if (fcAnswerKey) fcAnswerKey.innerHTML = escHtml(kunciJawaban);
-
-            const fcExplanation = document.getElementById('fcExplanation');
-            if (fcExplanation) fcExplanation.innerHTML = q.pembahasan || q.explanation || 'Analisis teknis tidak tersedia untuk item ini.';
-
-            const fcPembahasanBox = document.getElementById('fcPembahasanBox');
-            if (fcPembahasanBox) {
-                fcPembahasanBox.innerHTML = '';
-                if (q.eliminasi_opsi && typeof q.eliminasi_opsi === 'object') {
-                    let elimHtml = `
-                        <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
-                            <div style="font-weight: 800; font-size: 12px; color: var(--gold); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">Analisis Pilihan Jawaban:</div>
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                    `;
-                    Object.entries(q.eliminasi_opsi).forEach(([optLetter, reasoning]) => {
-                        const cleanReason = String(reasoning).trim();
-                        const isCorrectReason = cleanReason.toLowerCase().startsWith('benar');
-                        const badgeColor = isCorrectReason ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.04)';
-                        const textColor = isCorrectReason ? 'var(--green)' : 'var(--red)';
-                        const borderColor = isCorrectReason ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.1)';
-                        const dotIndex = cleanReason.indexOf('.');
-                        const displayReason = dotIndex !== -1 ? cleanReason.slice(dotIndex + 1).trim() : cleanReason;
-                        
-                        elimHtml += `
-                            <div style="font-size: 13px; line-height: 1.6; padding: 10px 14px; background: ${badgeColor}; border: 1px solid ${borderColor}; border-radius: 8px; display: flex; align-items: flex-start; gap: 10px;">
-                                <span style="font-weight: 900; color: ${textColor}; min-width: 20px; text-align: center; font-size: 12px; background: ${isCorrectReason ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.1)'}; border-radius: 4px; padding: 1px 4px;">${optLetter}</span>
-                                <div style="color: var(--ink-soft);"><strong style="color: ${textColor}; font-weight: 700;">${isCorrectReason ? 'BENAR' : 'SALAH'}</strong>. ${escHtml(displayReason)}</div>
-                            </div>
-                        `;
-                    });
-                    elimHtml += `</div></div>`;
-                    fcPembahasanBox.innerHTML = elimHtml;
-                }
-            }
-
-            const fcCard = document.getElementById('flashcardCard');
-            if (fcCard) {
+            if (guessInput) {
+                guessInput.value = userAnswers[idx] || '';
+                guessInput.disabled = revealed;
                 if (revealed) {
-                    fcCard.classList.add('flipped');
+                    const isCorrect = checkIsCorrect(userAnswers[idx], q);
+                    guessInput.style.borderColor = isCorrect ? 'var(--green)' : '#991b1b';
+                    guessInput.style.background = isCorrect ? 'rgba(16,185,129,0.1)' : 'rgba(153,27,27,0.1)';
                 } else {
-                    fcCard.classList.remove('flipped');
+                    guessInput.style.borderColor = ''; 
+                    guessInput.style.background = '';
+                    guessInput.oninput = (e) => {
+                        userAnswers[idx] = e.target.value;
+                        updateNavGridUI();
+                        updateSidebarStats();
+                        saveSession();
+                    };
                 }
             }
 
-            initFlashcardGestures();
+            startQuestionTimer();
 
         } else {
-            if (cbtLayout) {
-                cbtLayout.style.display = 'grid';
-                cbtLayout.style.justifyContent = 'stretch';
-            }
-            if (sidebar) sidebar.style.display = 'block';
-            if (mainCard) mainCard.style.display = 'block';
-            if (flashcardContainer) flashcardContainer.style.display = 'none';
-
-            const qNumDisplayLarge = document.getElementById('qNumDisplayLarge');
-            if (qNumDisplayLarge) qNumDisplayLarge.textContent = `Soal ${idx + 1}/${total}`;
-
-            const qProgressFill = document.getElementById('qProgressFill');
-            if (qProgressFill) qProgressFill.style.width = ((idx + 1) / total * 100) + '%';
-
-            const globalProgressBar = document.getElementById('globalProgressBar');
-            if (globalProgressBar) globalProgressBar.style.width = ((idx + 1) / total * 100) + '%';
-
-            const progressPercent = document.getElementById('progressPercent');
-            if (progressPercent) progressPercent.textContent = Math.round((idx + 1) / total * 100) + '%';
-
-            const cardBookmarkBtn = document.getElementById('cardBookmarkBtn');
-            if (cardBookmarkBtn) {
-                cardBookmarkBtn.style.color = isDoubt ? 'var(--gold)' : 'var(--ink-faint)';
-                cardBookmarkBtn.style.textShadow = isDoubt ? '0 0 10px rgba(212,168,67,0.5)' : 'none';
-            }
-
-            const metaContainer = document.getElementById('questionMetadataContainer');
-            if (metaContainer) metaContainer.innerHTML = getMetaBadgesHtml();
-
-            const imgContainer = document.getElementById('questionImageContainer');
-            if (imgContainer) {
-                if (imgUrl) {
-                    imgContainer.style.display = 'block';
-                    imgContainer.style.textAlign = 'center';
-                    imgContainer.innerHTML = `
-                        <div style="position: relative; display: inline-block; max-width: 100%; margin: 0 auto 12px auto; cursor: zoom-in;" onclick="openLightbox('${imgUrl}')">
-                            <img src="${imgUrl}" style="max-width: 100%; max-height: 280px; width: auto; height: auto; border-radius: var(--radius); border: 1.5px solid rgba(255,255,255,0.08); object-fit: contain; display: block; margin: 0 auto;" />
-                            <div style="margin-top: 8px; font-size: 11px; color: var(--gold); font-weight: 700; text-align: center; display: flex; align-items: center; justify-content: center; gap: 4px;">
-                                🔍 Sentuh gambar untuk memperbesar
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    imgContainer.style.display = 'none';
-                    imgContainer.innerHTML = '';
-                }
-            }
-
-            const qTextEl = document.getElementById('questionText');
-            if (qTextEl) {
-                qTextEl.innerHTML = questionHtml;
-                qTextEl.querySelectorAll('img').forEach(img => {
-                    img.style.cursor = 'zoom-in';
-                    img.onclick = (e) => {
-                        e.stopPropagation();
-                        openLightbox(img.src);
-                    };
-                });
-            }
-
-            const optionsContainer = document.getElementById('optionsContainer');
             if (optionsContainer) {
+                optionsContainer.style.display = 'block';
                 optionsContainer.innerHTML = '';
                 const letters = ['A', 'B', 'C', 'D', 'E'];
                 (q.pilihan || q.options || []).forEach((opt, i) => {
@@ -2332,59 +2267,60 @@
                 });
             }
 
-            const pemBox = document.getElementById('pembahasanBox');
-            if (pemBox) {
-                if (revealed) {
-                    const isBenar = checkIsCorrect(userAnswers[idx], q);
-                    let eliminasiHtml = '';
-                    if (q.eliminasi_opsi && typeof q.eliminasi_opsi === 'object') {
-                        eliminasiHtml = `
-                            <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
-                                <div style="font-weight: 800; font-size: 12px; color: var(--gold); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">Analisis Pilihan Jawaban:</div>
-                                <div style="display: flex; flex-direction: column; gap: 8px;">
-                        `;
-                        Object.entries(q.eliminasi_opsi).forEach(([optLetter, reasoning]) => {
-                            const cleanReason = String(reasoning).trim();
-                            const isCorrectReason = cleanReason.toLowerCase().startsWith('benar');
-                            const badgeColor = isCorrectReason ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.04)';
-                            const textColor = isCorrectReason ? 'var(--green)' : 'var(--red)';
-                            const borderColor = isCorrectReason ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.1)';
-                            const dotIndex = cleanReason.indexOf('.');
-                            const displayReason = dotIndex !== -1 ? cleanReason.slice(dotIndex + 1).trim() : cleanReason;
-                            
-                            eliminasiHtml += `
-                                <div style="font-size: 13px; line-height: 1.6; padding: 10px 14px; background: ${badgeColor}; border: 1px solid ${borderColor}; border-radius: 8px; display: flex; align-items: flex-start; gap: 10px;">
-                                    <span style="font-weight: 900; color: ${textColor}; min-width: 20px; text-align: center; font-size: 12px; background: ${isCorrectReason ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.1)'}; border-radius: 4px; padding: 1px 4px;">${optLetter}</span>
-                                    <div style="color: var(--ink-soft);"><strong style="color: ${textColor}; font-weight: 700;">${isCorrectReason ? 'BENAR' : 'SALAH'}</strong>. ${escHtml(displayReason)}</div>
-                                </div>
-                            `;
-                        });
-                        eliminasiHtml += `</div></div>`;
-                    }
-
-                    pemBox.style.display = 'block';
-                    const isBenarGrading = checkIsCorrect(userAnswers[idx], q);
-                    pemBox.innerHTML = `
-                        <div class="pembahasan-box">
-                            <div class="pembahasan-header ${isBenarGrading ? 'correct' : 'wrong'}">
-                                ${isBenarGrading ? 'VERIFIED: CORRECT' : 'VERIFIED: INCORRECT'}
-                            </div>
-                            <div class="pembahasan-body">
-                                <div class="pembahasan-kunci">KUNCI JAWABAN: ${escHtml(kunciJawaban)}</div>
-                                <div>${q.pembahasan || q.explanation || 'Analisis teknis tidak tersedia untuk item ini.'}</div>
-                                ${eliminasiHtml}
-                            </div>
-                        </div>`;
-                } else {
-                    pemBox.style.display = 'none';
-                }
-            }
+            if (hintModeContainer) hintModeContainer.style.display = 'none';
 
             startQuestionTimer();
         }
 
+        const pemBox = document.getElementById('pembahasanBox');
+        if (pemBox) {
+            if (revealed) {
+                const isBenar = checkIsCorrect(userAnswers[idx], q);
+                let eliminasiHtml = '';
+                if (q.eliminasi_opsi && typeof q.eliminasi_opsi === 'object') {
+                    eliminasiHtml = `
+                        <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
+                            <div style="font-weight: 800; font-size: 12px; color: var(--gold); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">Analisis Pilihan Jawaban:</div>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                    `;
+                    Object.entries(q.eliminasi_opsi).forEach(([optLetter, reasoning]) => {
+                        const cleanReason = String(reasoning).trim();
+                        const isCorrectReason = cleanReason.toLowerCase().startsWith('benar');
+                        const badgeColor = isCorrectReason ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.04)';
+                        const textColor = isCorrectReason ? 'var(--green)' : 'var(--red)';
+                        const borderColor = isCorrectReason ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.1)';
+                        const dotIndex = cleanReason.indexOf('.');
+                        const displayReason = dotIndex !== -1 ? cleanReason.slice(dotIndex + 1).trim() : cleanReason;
+                        
+                        eliminasiHtml += `
+                            <div style="font-size: 13px; line-height: 1.6; padding: 10px 14px; background: ${badgeColor}; border: 1px solid ${borderColor}; border-radius: 8px; display: flex; align-items: flex-start; gap: 10px;">
+                                <span style="font-weight: 900; color: ${textColor}; min-width: 20px; text-align: center; font-size: 12px; background: ${isCorrectReason ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.1)'}; border-radius: 4px; padding: 1px 4px;">${optLetter}</span>
+                                <div style="color: var(--ink-soft);"><strong style="color: ${textColor}; font-weight: 700;">${isCorrectReason ? 'BENAR' : 'SALAH'}</strong>. ${escHtml(displayReason)}</div>
+                            </div>
+                        `;
+                    });
+                    eliminasiHtml += `</div></div>`;
+                }
+
+                pemBox.style.display = 'block';
+                pemBox.innerHTML = `
+                    <div class="pembahasan-box">
+                        <div class="pembahasan-header ${isBenar ? 'correct' : 'wrong'}">
+                            ${isBenar ? 'VERIFIED: CORRECT' : 'VERIFIED: INCORRECT'}
+                        </div>
+                        <div class="pembahasan-body">
+                            <div class="pembahasan-kunci">KUNCI JAWABAN: ${escHtml(kunciJawaban)}</div>
+                            <div>${q.pembahasan || q.explanation || 'Analisis teknis tidak tersedia untuk item ini.'}</div>
+                            ${eliminasiHtml}
+                        </div>
+                    </div>`;
+            } else {
+                pemBox.style.display = 'none';
+            }
+        }
+
         document.getElementById('btnPrev').disabled = idx === 0;
-        document.getElementById('btnCekJawaban').style.display = (isHintMode || revealed) ? 'none' : 'inline-flex';
+        document.getElementById('btnCekJawaban').style.display = revealed ? 'none' : 'inline-flex';
         
         const btnNext = document.getElementById('btnNext');
         if (btnNext) {
@@ -2405,12 +2341,6 @@
 
     function checkIsCorrect(answer, question) {
         if (!answer) return false;
-
-        const isHintMode = !question.pilihan || question.pilihan.length === 0;
-        if (isHintMode) {
-            if (answer === "mudah/sedang") return true;
-            if (answer === "sulit") return false;
-        }
 
         // 1. Helper function for clean normalization
         const normalize = (str) => {
