@@ -650,7 +650,7 @@
             .sidebar {
                 display: none !important;
             }
-            #btnOpenNavGrid {
+            body.quiz-active #btnOpenNavGrid {
                 display: inline-flex !important;
             }
             .option-label {
@@ -767,6 +767,9 @@
             .folder-header span {
                 font-size: 11px !important;
             }
+        }
+        #btnOpenNavGrid {
+            display: none !important;
         }
     </style>
 </head>
@@ -1772,8 +1775,7 @@
         currentIndex = 0;
         document.getElementById('headerSubtitle').textContent = `LATIHAN LANGSUNG: ${pool.length} SOAL`;
         document.getElementById('btnBackHome').style.display = 'inline-flex';
-        const openNavBtn = document.getElementById('btnOpenNavGrid');
-        if (openNavBtn) openNavBtn.style.display = 'inline-flex';
+        document.body.classList.add('quiz-active');
         document.getElementById('setupPage').style.display = 'none';
         document.getElementById('cbtPage').style.display = 'block';
         buildNavGrid();
@@ -1787,8 +1789,7 @@
         document.getElementById('resultPage').style.display = 'none';
         document.getElementById('setupPage').style.display = 'block';
         document.getElementById('btnBackHome').style.display = 'none';
-        const openNavBtn = document.getElementById('btnOpenNavGrid');
-        if (openNavBtn) openNavBtn.style.display = 'none';
+        document.body.classList.remove('quiz-active');
         document.getElementById('headerSubtitle').textContent = 'Exclusive Question Bank';
         updateResumeButtonVisibility();
     }
@@ -3266,12 +3267,11 @@ selectedImage = scoreImages["88_94"][Math.floor(Math.random() * scoreImages["88_
             // Transition to CBT Page
             document.getElementById('headerSubtitle').textContent = `LATIHAN LANGSUNG: ${currentQuiz.length} SOAL`;
             document.getElementById('btnBackHome').style.display = 'inline-flex';
+            document.body.classList.add('quiz-active');
             document.getElementById('setupPage').style.display = 'none';
             document.getElementById('cbtPage').style.display = 'block';
             const resumeBtn = document.getElementById('btnResumeQuiz');
             if (resumeBtn) resumeBtn.style.display = 'none';
-            const openNavBtn = document.getElementById('btnOpenNavGrid');
-            if (openNavBtn) openNavBtn.style.display = 'inline-flex';
             buildNavGrid();
             loadQuestion(currentIndex);
             showToast('Progres kuis dipulihkan!', '🔄');
