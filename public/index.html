@@ -2019,9 +2019,6 @@
                     return `<span style="display:inline-flex; align-items:center; padding:4px 10px; border-radius:99px; font-size:11px; font-weight:700; background:${bg}; border:1px solid ${border}; color:${color}; text-transform:uppercase; letter-spacing:0.5px; margin-right:6px; margin-bottom:6px;"><span style="opacity:0.6; margin-right:4px;">${label}:</span> ${escHtml(value)}</span>`;
                 };
                 badgesHtml += makeBadge('BLOK', meta.blok);
-                badgesHtml += makeBadge('SKDI', meta.tingkat_kompetensi_skdi, 'rgba(16,185,129,0.1)', 'rgba(16,185,129,0.2)', 'var(--green)');
-                badgesHtml += makeBadge('SUB', meta.sub_kompetensi_klinis, 'rgba(255,255,255,0.05)', 'rgba(255,255,255,0.1)', '#fff');
-                badgesHtml += makeBadge('KOGNITIF', meta.tingkat_kognitif);
                 
                 let diffColor = 'var(--gold)';
                 let diffBg = 'rgba(212,175,55,0.1)';
@@ -2033,9 +2030,6 @@
                 }
                 badgesHtml += makeBadge('KESULITAN', meta.tingkat_kesulitan, diffBg, diffBorder, diffColor);
                 
-                if (meta.kegawatdaruratan === true || String(meta.kegawatdaruratan).toLowerCase() === 'true') {
-                    badgesHtml += `<span style="display:inline-flex; align-items:center; padding:4px 10px; border-radius:99px; font-size:11px; font-weight:800; background:rgba(244,63,94,0.2); border:1px solid #f43f5e; color:#fff; margin-right:6px; margin-bottom:6px;">🚨 IGD / GAWAT DARURAT</span>`;
-                }
                 if (meta.xp) {
                     badgesHtml += makeBadge('XP', `+${meta.xp} XP`, 'rgba(212,175,55,0.2)', 'var(--gold)', 'var(--gold)');
                 }
@@ -2104,9 +2098,10 @@
             if (fcImageContainer) {
                 if (imgUrl) {
                     fcImageContainer.style.display = 'block';
+                    fcImageContainer.style.textAlign = 'center';
                     fcImageContainer.innerHTML = `
-                        <div style="position: relative; display: inline-block; max-width: 100%; cursor: zoom-in;" onclick="event.stopPropagation(); openLightbox('${imgUrl}')">
-                            <img src="${imgUrl}" style="max-width: 100%; max-height: 280px; border-radius: var(--radius); border: 1.5px solid rgba(255,255,255,0.08); object-fit: contain; display: block;" />
+                        <div style="position: relative; display: inline-block; max-width: 100%; margin: 0 auto; cursor: zoom-in;" onclick="event.stopPropagation(); openLightbox('${imgUrl}')">
+                            <img src="${imgUrl}" style="max-width: 100%; max-height: 240px; width: auto; height: auto; border-radius: var(--radius); border: 1.5px solid rgba(255,255,255,0.08); object-fit: contain; display: block; margin: 0 auto;" />
                             <div style="margin-top: 8px; font-size: 10px; color: var(--gold); font-weight: 700;">
                                 🔍 Sentuh gambar untuk memperbesar
                             </div>
@@ -2230,9 +2225,10 @@
             if (imgContainer) {
                 if (imgUrl) {
                     imgContainer.style.display = 'block';
+                    imgContainer.style.textAlign = 'center';
                     imgContainer.innerHTML = `
-                        <div style="position: relative; display: inline-block; max-width: 100%; margin-bottom: 12px; cursor: zoom-in;" onclick="openLightbox('${imgUrl}')">
-                            <img src="${imgUrl}" style="max-width: 100%; max-height: 480px; border-radius: var(--radius); border: 1.5px solid rgba(255,255,255,0.08); object-fit: contain; display: block;" />
+                        <div style="position: relative; display: inline-block; max-width: 100%; margin: 0 auto 12px auto; cursor: zoom-in;" onclick="openLightbox('${imgUrl}')">
+                            <img src="${imgUrl}" style="max-width: 100%; max-height: 280px; width: auto; height: auto; border-radius: var(--radius); border: 1.5px solid rgba(255,255,255,0.08); object-fit: contain; display: block; margin: 0 auto;" />
                             <div style="margin-top: 8px; font-size: 11px; color: var(--gold); font-weight: 700; text-align: center; display: flex; align-items: center; justify-content: center; gap: 4px;">
                                 🔍 Sentuh gambar untuk memperbesar
                             </div>
