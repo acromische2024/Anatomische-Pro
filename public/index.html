@@ -254,6 +254,18 @@
             padding: 0; background: transparent;
             border-radius: 0; border: none;
         }
+        .question-text img {
+            max-width: 100% !important;
+            max-height: 280px !important;
+            width: auto !important;
+            height: auto !important;
+            object-fit: contain !important;
+            display: block !important;
+            margin: 16px auto !important;
+            border-radius: var(--radius);
+            border: 1.5px solid rgba(255,255,255,0.08);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
 
         .guess-input {
             width: 100%; padding: 18px; border-radius: var(--radius);
@@ -2114,7 +2126,16 @@
             }
 
             const fcQuestionText = document.getElementById('fcQuestionText');
-            if (fcQuestionText) fcQuestionText.innerHTML = questionHtml;
+            if (fcQuestionText) {
+                fcQuestionText.innerHTML = questionHtml;
+                fcQuestionText.querySelectorAll('img').forEach(img => {
+                    img.style.cursor = 'zoom-in';
+                    img.onclick = (e) => {
+                        e.stopPropagation();
+                        openLightbox(img.src);
+                    };
+                });
+            }
 
             const fcHintList = document.getElementById('fcHintList');
             const btnFcShowHint = document.getElementById('btnFcShowHint');
@@ -2241,7 +2262,16 @@
             }
 
             const qTextEl = document.getElementById('questionText');
-            if (qTextEl) qTextEl.innerHTML = questionHtml;
+            if (qTextEl) {
+                qTextEl.innerHTML = questionHtml;
+                qTextEl.querySelectorAll('img').forEach(img => {
+                    img.style.cursor = 'zoom-in';
+                    img.onclick = (e) => {
+                        e.stopPropagation();
+                        openLightbox(img.src);
+                    };
+                });
+            }
 
             const optionsContainer = document.getElementById('optionsContainer');
             if (optionsContainer) {
@@ -2900,8 +2930,8 @@ selectedImage = scoreImages["88_94"][Math.floor(Math.random() * scoreImages["88_
             document.getElementById('fireCanvas').style.display = 'none';
             
             if (score === 100) {
-                // Perfect: Continuous confetti + Fireworks
-                var duration = 15 * 1000;
+                // Perfect: Continuous confetti + Fireworks (Limited to 3 seconds)
+                var duration = 3 * 1000;
                 var animationEnd = Date.now() + duration;
                 var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
                 function randomInRange(min, max) { return Math.random() * (max - min) + min; }
@@ -2979,10 +3009,16 @@ selectedImage = scoreImages["88_94"][Math.floor(Math.random() * scoreImages["88_
 
         let frame = 0;
         let animationFrameId;
+        const startTime = Date.now();
 
         function animate() {
-            if (document.getElementById('resultPage').style.display === 'none') {
-                canvas.style.display = 'none';
+            if (document.getElementById('resultPage').style.display === 'none' || (Date.now() - startTime > 3000)) {
+                canvas.style.transition = 'opacity 0.5s ease';
+                canvas.style.opacity = '0';
+                setTimeout(() => {
+                    canvas.style.display = 'none';
+                    canvas.style.opacity = '1';
+                }, 500);
                 window.removeEventListener('resize', handleResize);
                 cancelAnimationFrame(animationFrameId);
                 return; 
