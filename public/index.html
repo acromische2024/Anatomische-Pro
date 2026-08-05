@@ -641,17 +641,17 @@
                 font-size: 48px;
             }
             .cbt-layout {
+                grid-template-columns: 1fr !important;
                 gap: var(--spacing-md);
-                flex-direction: column !important;
             }
             .question-panel {
                 width: 100% !important;
             }
             .sidebar {
-                width: 100% !important;
-                position: relative !important;
-                top: 0 !important;
-                margin-top: 24px;
+                display: none !important;
+            }
+            #btnOpenNavGrid {
+                display: inline-flex !important;
             }
             .option-label {
                 padding: 14px 18px !important;
@@ -793,6 +793,9 @@
 <button class="btn btn-ghost" id="btnBackHome" onclick="goHome()" style="display:none; padding: 6px 12px; font-size: 12px;">
         ⌂ HOME
     </button>
+<button class="btn btn-ghost" id="btnOpenNavGrid" onclick="openMobileNavGrid()" style="display:none; padding: 6px 12px; font-size: 12px; border-color: var(--gold); color: var(--gold); margin-left: 8px;">
+    ☰ PETA SOAL
+</button>
 </header>
 <div class="wrapper" id="setupPage">
 <div style="margin-bottom:40px; text-align: center;">
@@ -1769,6 +1772,8 @@
         currentIndex = 0;
         document.getElementById('headerSubtitle').textContent = `LATIHAN LANGSUNG: ${pool.length} SOAL`;
         document.getElementById('btnBackHome').style.display = 'inline-flex';
+        const openNavBtn = document.getElementById('btnOpenNavGrid');
+        if (openNavBtn) openNavBtn.style.display = 'inline-flex';
         document.getElementById('setupPage').style.display = 'none';
         document.getElementById('cbtPage').style.display = 'block';
         buildNavGrid();
@@ -1782,6 +1787,8 @@
         document.getElementById('resultPage').style.display = 'none';
         document.getElementById('setupPage').style.display = 'block';
         document.getElementById('btnBackHome').style.display = 'none';
+        const openNavBtn = document.getElementById('btnOpenNavGrid');
+        if (openNavBtn) openNavBtn.style.display = 'none';
         document.getElementById('headerSubtitle').textContent = 'Exclusive Question Bank';
         updateResumeButtonVisibility();
     }
@@ -3263,9 +3270,99 @@ selectedImage = scoreImages["88_94"][Math.floor(Math.random() * scoreImages["88_
             document.getElementById('cbtPage').style.display = 'block';
             const resumeBtn = document.getElementById('btnResumeQuiz');
             if (resumeBtn) resumeBtn.style.display = 'none';
+            const openNavBtn = document.getElementById('btnOpenNavGrid');
+            if (openNavBtn) openNavBtn.style.display = 'inline-flex';
             buildNavGrid();
             loadQuestion(currentIndex);
             showToast('Progres kuis dipulihkan!', '🔄');
+        }
+    }
+
+    function openMobileNavGrid() {
+        const overlay = document.getElementById('mobileNavGridOverlay');
+        if (overlay) {
+            overlay.style.display = 'flex';
+            buildMobileNavGrid();
+        }
+    }
+    
+    function closeMobileNavGrid() {
+        const overlay = document.getElementById('mobileNavGridOverlay');
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
+    }
+    
+    function buildMobileNavGrid() {
+        const drawerGrid = document.getElementById('mobileDrawerGrid');
+        const drawerStats = document.getElementById('mobileDrawerStats');
+        if (!drawerGrid || !drawerStats) return;
+        
+        const sudah = userAnswers.filter(ans => ans !== null).length;
+        const ragu = doubtStatus.filter(d => d === true).length;
+        const belum = currentQuiz.length - sudah;
+        
+        drawerStats.innerHTML = `
+            <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.15); border-radius:12px; padding:10px; text-align:center;">
+                <div style="font-size:16px; font-weight:800; color:var(--green);">${sudah}</div>
+                <div style="font-size:10px; color:var(--ink-soft); font-weight:700; text-transform:uppercase; margin-top:2px;">Sudah</div>
+            </div>
+            <div style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.15); border-radius:12px; padding:10px; text-align:center;">
+                <div style="font-size:16px; font-weight:800; color:#f59e0b;">${ragu}</div>
+                <div style="font-size:10px; color:var(--ink-soft); font-weight:700; text-transform:uppercase; margin-top:2px;">Ragu</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:12px; padding:10px; text-align:center;">
+                <div style="font-size:16px; font-weight:800; color:#fff;">${belum}</div>
+                <div style="font-size:10px; color:var(--ink-soft); font-weight:700; text-transform:uppercase; margin-top:2px;">Belum</div>
+            </div>
+        `;
+        
+        drawerGrid.innerHTML = '';
+        for (let i = 0; i < currentQuiz.length; i++) {
+            const box = document.createElement('div');
+            box.textContent = i + 1;
+            
+            let bg = 'rgba(255,255,255,0.02)';
+            let border = '1px solid rgba(255,255,255,0.15)';
+            let color = 'var(--ink-soft)';
+            
+            const isSelected = i === currentIndex;
+            const hasAns = userAnswers[i] !== null;
+            const isRagu = doubtStatus[i] === true;
+            
+            if (hasAns) {
+                bg = 'rgba(16, 185, 129, 0.2)';
+                border = '1.5px solid var(--green)';
+                color = '#fff';
+            }
+            if (isRagu) {
+                bg = 'rgba(245, 158, 11, 0.2)';
+                border = '1.5px solid #f59e0b';
+                color = '#fff';
+            }
+            if (isSelected) {
+                bg = 'rgba(212, 175, 55, 0.3)';
+                border = '2px solid var(--gold)';
+                color = '#fff';
+                box.style.boxShadow = '0 0 10px var(--gold)';
+            }
+            
+            box.style.background = bg;
+            box.style.border = border;
+            box.style.color = color;
+            box.style.borderRadius = '10px';
+            box.style.padding = '12px 0';
+            box.style.textAlign = 'center';
+            box.style.fontSize = '14px';
+            box.style.fontWeight = '800';
+            box.style.cursor = 'pointer';
+            box.style.transition = 'all 0.2s';
+            
+            box.onclick = () => {
+                loadQuestion(i);
+                closeMobileNavGrid();
+            };
+            drawerGrid.appendChild(box);
         }
     }
 
@@ -3303,4 +3400,33 @@ selectedImage = scoreImages["88_94"][Math.floor(Math.random() * scoreImages["88_
         });
     }
 </script>
+<!-- Mobile Nav Grid Drawer/Modal -->
+<div id="mobileNavGridOverlay" onclick="closeMobileNavGrid()" style="position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9000; display:none; align-items:flex-end; justify-content:center; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);">
+    <div class="mobile-drawer-content" onclick="event.stopPropagation()" style="width:100%; max-height:85vh; background:var(--bg-card); border-top: 2px solid var(--gold); border-radius: 24px 24px 0 0; padding: 24px; box-shadow: 0 -10px 30px rgba(0,0,0,0.5); display:flex; flex-direction:column; gap:20px; overflow-y:auto; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px;">
+            <div style="font-size:16px; font-weight:800; color:var(--gold); letter-spacing:1px; text-transform:uppercase;">PETA SOAL UJIAN</div>
+            <button onclick="closeMobileNavGrid()" style="background:none; border:none; color:var(--ink-soft); font-size:22px; cursor:pointer;">✕</button>
+        </div>
+        
+        <!-- Live Stats Row inside Drawer -->
+        <div id="mobileDrawerStats" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;"></div>
+        
+        <!-- Question Grid inside Drawer -->
+        <div id="mobileDrawerGrid" style="display:grid; grid-template-columns:repeat(5, 1fr); gap:10px; margin: 10px 0;"></div>
+        
+        <!-- Legend Row inside Drawer -->
+        <div style="display:flex; flex-wrap:wrap; gap:12px; font-size:11px; color:var(--ink-soft); border-top:1px solid rgba(255,255,255,0.08); padding-top:12px; justify-content:center;">
+            <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:8px; height:8px; border-radius:50%; background:var(--green);"></span> Terjawab</span>
+            <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:8px; height:8px; border-radius:50%; background:#f59e0b;"></span> Ragu-ragu</span>
+            <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:8px; height:8px; border-radius:50%; background:var(--gold);"></span> Aktif</span>
+            <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:8px; height:8px; border-radius:50%; background:#4b5563;"></span> Belum Dijawab</span>
+        </div>
+    </div>
+</div>
+<style>
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+</style>
 </body></html>
