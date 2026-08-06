@@ -798,6 +798,30 @@
         👆 Klik/Sentuh gambar untuk zoom & geser
     </div>
 </div>
+<!-- LOGIN GATE PAGE -->
+<div id="loginGatePage" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; box-sizing: border-box; background: var(--bg-deep);">
+    <div class="card" style="width: 100%; max-width: 420px; padding: 40px 32px; text-align: center; border: 1.5px solid var(--gold-line); box-shadow: 0 10px 40px rgba(0,0,0,0.6); position: relative; border-radius: var(--radius-lg); background: var(--bg-card);">
+        <!-- Logo & Branding -->
+        <div style="margin-bottom: 28px;">
+            <img src="logo.png" alt="Logo" style="height: 64px; width: 64px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold); margin-bottom: 12px; filter: drop-shadow(0 4px 10px rgba(212,175,55,0.3));" />
+            <div style="font-size: 26px; font-weight: 900; color: var(--gold); letter-spacing: -0.5px; text-transform: uppercase;">Anatom<span style="color:#fff;">ische</span> PRO</div>
+            <div style="font-size: 11px; color: var(--ink-soft); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-top: 4px;">Exclusive Access Portal</div>
+        </div>
+        
+        <!-- Input Form -->
+        <div style="margin-bottom: 28px;">
+            <label for="loginNIMInput" style="display: block; font-size: 11px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 1px; text-align: left; margin-bottom: 8px;">Nomor Induk Ujian</label>
+            <input type="text" id="loginNIMInput" placeholder="Masukkan Nomor Induk..." autocomplete="off" onkeydown="if(event.key==='Enter') handleLoginSubmit()" style="width: 100%; padding: 16px; border-radius: 12px; border: 2px solid var(--gold-line); background: rgba(255,255,255,0.02); font-size: 18px; font-weight: 700; color: var(--gold); outline: none; text-align: center; box-sizing: border-box; transition: all 0.2s;" />
+            <div id="loginErrorMessage" style="color: #f87171; font-size: 12px; font-weight: 600; margin-top: 10px; display: none;"></div>
+        </div>
+        
+        <!-- Action Button -->
+        <button id="btnSubmitLogin" onclick="handleLoginSubmit()" class="btn btn-primary btn-full" style="padding: 16px; font-size: 14px; font-weight: 800; letter-spacing: 1px; border-radius: 12px; background: #D4A843; color: #000; box-shadow: 0 4px 15px rgba(212,168,67,0.4); cursor: pointer;">
+            MASUK KE PORTAL
+        </button>
+    </div>
+</div>
+<div id="mainAppContent" style="display:none;">
 <canvas id="fireCanvas" style="position:fixed; inset:0; pointer-events:none; z-index:9999; display:none;"></canvas>
 <div class="bg-orbs"><span></span><span></span><span></span></div>
 <div id="globalProgress"><div id="globalProgressBar"></div></div>
@@ -1068,6 +1092,7 @@
 </div>
 </div>
 </div>
+</div>
 <div id="toast"></div>
 <script>
     window.onerror = function (message, source, lineno, colno, error) {
@@ -1125,6 +1150,8 @@
         document.body.appendChild(errDiv);
     });
 
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4e-mUsGG1CK9vMTVrGVEQWKcYupkpN0WqV2Z2BQuDTR4vaNYWIALdO7kw2ASnL3xN/exec";
+    let isCheckingSession = false;
     let questionDatabase = {};
     let currentQuiz = [], currentIndex = 0;
     let userAnswers = [], doubtStatus = [], isRevealed = [], visibleHints = [];
@@ -1272,6 +1299,126 @@
             img.style.transform = 'scale(1) translate(0px, 0px)';
             img.style.cursor = 'zoom-in';
         }
+    }
+
+    async function handleLoginSubmit() {
+        const inputField = document.getElementById('loginNIMInput');
+        const errorMsg = document.getElementById('loginErrorMessage');
+        const submitBtn = document.getElementById('btnSubmitLogin');
+        if (!inputField || !submitBtn) return;
+
+        const nim = inputField.value.trim();
+        if (!nim) {
+            errorMsg.textContent = "Nomor Induk tidak boleh kosong!";
+            errorMsg.style.display = 'block';
+            return;
+        }
+
+        // Disable input & show loading state
+        inputField.disabled = true;
+        submitBtn.disabled = true;
+        submitBtn.textContent = "MEMVERIFIKASI...";
+        errorMsg.style.display = 'none';
+
+        // Generate unique token
+        const token = 'token_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+
+        try {
+            const url = `${APPS_SCRIPT_URL}?action=login&id=${encodeURIComponent(nim)}&token=${encodeURIComponent(token)}`;
+            const res = await fetch(url);
+            const data = await res.json();
+
+            if (data.allowed) {
+                // Save to localStorage
+                localStorage.setItem('anatomische_pro_nim', nim);
+                localStorage.setItem('anatomische_pro_session_token', token);
+
+                // Show portal content
+                document.getElementById('loginGatePage').style.display = 'none';
+                document.getElementById('mainAppContent').style.display = 'block';
+
+                showToast("Selamat datang di portal!", "🔑");
+                
+                // Initialize home dashboard
+                restoreSession();
+            } else {
+                errorMsg.textContent = data.error || "Nomor Induk Anda tidak terdaftar!";
+                errorMsg.style.display = 'block';
+                inputField.disabled = false;
+                submitBtn.disabled = false;
+                submitBtn.textContent = "MASUK KE PORTAL";
+            }
+        } catch (e) {
+            console.error(e);
+            errorMsg.textContent = "Gagal terhubung ke server. Periksa jaringan Anda.";
+            errorMsg.style.display = 'block';
+            inputField.disabled = false;
+            submitBtn.disabled = false;
+            submitBtn.textContent = "MASUK KE PORTAL";
+        }
+    }
+
+    async function checkSessionActive() {
+        if (isCheckingSession) return true;
+        const nim = localStorage.getItem('anatomische_pro_nim');
+        const token = localStorage.getItem('anatomische_pro_session_token');
+        
+        if (!nim || !token) return false;
+
+        isCheckingSession = true;
+        try {
+            const url = `${APPS_SCRIPT_URL}?action=check&id=${encodeURIComponent(nim)}&token=${encodeURIComponent(token)}`;
+            const res = await fetch(url);
+            const data = await res.json();
+            
+            if (!data.active) {
+                forceLogout("Sesi Anda telah berakhir karena akun ini digunakan di perangkat lain!");
+                return false;
+            }
+            return true;
+        } catch (e) {
+            console.error("Gagal memeriksa sesi:", e);
+            return true; // Don't kick out on transient network error
+        } finally {
+            isCheckingSession = false;
+        }
+    }
+
+    function forceLogout(reason) {
+        // Clear all session storage
+        localStorage.removeItem('anatomische_pro_nim');
+        localStorage.removeItem('anatomische_pro_session_token');
+        localStorage.removeItem('anatomische_pro_last_active_key');
+
+        // Hide app, show login page
+        document.getElementById('mainAppContent').style.display = 'none';
+        
+        const loginPage = document.getElementById('loginGatePage');
+        loginPage.style.display = 'flex';
+        
+        // Reset input fields
+        const inputField = document.getElementById('loginNIMInput');
+        const submitBtn = document.getElementById('btnSubmitLogin');
+        const errorMsg = document.getElementById('loginErrorMessage');
+        
+        if (inputField) {
+            inputField.value = '';
+            inputField.disabled = false;
+        }
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "MASUK KE PORTAL";
+        }
+        if (errorMsg) {
+            errorMsg.textContent = reason;
+            errorMsg.style.display = 'block';
+        }
+
+        // Make sure background timers are stopped
+        stopQuestionTimer();
+        
+        // Trigger alert toast
+        showToast(reason, "⚠️");
     }
 
     function showToast(msg, icon = 'ℹ️') {
@@ -2094,6 +2241,7 @@
     }
 
     function loadQuestion(idx) {
+        checkSessionActive();
         if (!currentQuiz || currentQuiz.length === 0) {
             console.error("loadQuestion failed: currentQuiz is empty.");
             goHome();
@@ -3426,10 +3574,60 @@ selectedImage = scoreImages["88_94"][Math.floor(Math.random() * scoreImages["88_
         updateResumeButtonVisibility();
     }
 
-    checkServerHealth();
-    loadDatasetsFromServer();
-    checkAdminState();
-    restoreSession();
+    async function initPortal() {
+        const nim = localStorage.getItem('anatomische_pro_nim');
+        const token = localStorage.getItem('anatomische_pro_session_token');
+
+        if (nim && token) {
+            const inputField = document.getElementById('loginNIMInput');
+            const submitBtn = document.getElementById('btnSubmitLogin');
+            
+            if (inputField) {
+                inputField.value = nim;
+                inputField.disabled = true;
+            }
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = "MEMULIHKAN SESI...";
+            }
+
+            try {
+                const url = `${APPS_SCRIPT_URL}?action=check&id=${encodeURIComponent(nim)}&token=${encodeURIComponent(token)}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                
+                if (data.active) {
+                    document.getElementById('loginGatePage').style.display = 'none';
+                    document.getElementById('mainAppContent').style.display = 'block';
+
+                    checkServerHealth();
+                    loadDatasetsFromServer();
+                    checkAdminState();
+                    restoreSession();
+
+                    setInterval(checkSessionActive, 15000);
+                } else {
+                    forceLogout("Sesi Anda telah kedaluwarsa karena Nomor Induk ini digunakan di perangkat lain.");
+                }
+            } catch (e) {
+                console.error("Gagal verifikasi sesi saat start:", e);
+                document.getElementById('loginGatePage').style.display = 'none';
+                document.getElementById('mainAppContent').style.display = 'block';
+
+                checkServerHealth();
+                loadDatasetsFromServer();
+                checkAdminState();
+                restoreSession();
+
+                setInterval(checkSessionActive, 15000);
+            }
+        } else {
+            document.getElementById('loginGatePage').style.display = 'flex';
+            document.getElementById('mainAppContent').style.display = 'none';
+        }
+    }
+
+    initPortal();
 
     // Lightbox image panning and dragging
     const lightboxImg = document.getElementById('lightboxImg');
