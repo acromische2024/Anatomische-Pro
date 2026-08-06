@@ -651,24 +651,7 @@
                 display: none !important;
             }
             body.quiz-active #btnOpenNavGrid {
-                display: flex !important;
-                position: fixed !important;
-                bottom: 85px !important;
-                right: 20px !important;
-                width: 50px !important;
-                height: 50px !important;
-                border-radius: 50% !important;
-                background: var(--gold) !important;
-                border: none !important;
-                color: #111 !important;
-                font-size: 22px !important;
-                cursor: pointer !important;
-                align-items: center !important;
-                justify-content: center !important;
-                box-shadow: 0 4px 15px rgba(212,175,55,0.4) !important;
-                z-index: 1000 !important;
-                padding: 0 !important;
-                margin: 0 !important;
+                display: inline-flex !important;
             }
             .option-label {
                 padding: 14px 18px !important;
@@ -840,9 +823,6 @@
 <button class="btn btn-ghost" id="btnBackHome" onclick="goHome()" style="display:none; padding: 6px 12px; font-size: 12px;">
         ⌂ HOME
     </button>
-<button class="btn btn-ghost" id="btnOpenNavGrid" onclick="openMobileNavGrid()" style="display:none; padding: 6px 12px; font-size: 12px; border-color: var(--gold); color: var(--gold); margin-left: 8px;">
-    ☰ PETA SOAL
-</button>
 </header>
 <div class="wrapper" id="setupPage">
 <div style="margin-bottom:40px; text-align: center;">
@@ -1005,7 +985,12 @@
           <div style="display:flex; gap:8px; align-items:center;">
               <button class="btn btn-primary" id="btnCekJawaban" onclick="cekJawabanSekarang()" style="display:none;">CHECK<span class="btn-text"> JAWABAN</span></button>
           </div>
-          <button class="btn btn-primary" id="btnNext" onclick="navigateQuestion(1)"><span class="btn-text">Selanjutnya</span> →</button>
+          <div style="display:flex; gap:8px; align-items:center;">
+              <button class="btn btn-primary" id="btnNext" onclick="navigateQuestion(1)"><span class="btn-text">Selanjutnya</span> →</button>
+              <button class="btn btn-ghost" id="btnOpenNavGrid" onclick="openMobileNavGrid()" style="display:none; padding: 12px; font-size: 16px; border-color: var(--gold-line); color: var(--gold); min-width: 44px; display: inline-flex; align-items: center; justify-content: center; height: 44px; border-radius: 10px;">
+                  ☰
+              </button>
+          </div>
       </div>
   </div>
 <div class="sidebar">
@@ -1340,7 +1325,13 @@
                 showToast("Selamat datang di portal!", "🔑");
                 
                 // Initialize home dashboard
+                checkServerHealth();
+                loadDatasetsFromServer();
+                checkAdminState();
                 restoreSession();
+
+                // Start background heartbeat check (every 15s)
+                setInterval(checkSessionActive, 15000);
             } else {
                 errorMsg.textContent = data.error || "Nomor Induk Anda tidak terdaftar!";
                 errorMsg.style.display = 'block';
