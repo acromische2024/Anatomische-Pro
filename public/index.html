@@ -4,6 +4,9 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
 <title>AnatomischePro</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <link rel="icon" type="image/png" href="logo.png"/>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
@@ -820,6 +823,9 @@
 <button class="btn btn-ghost" id="btnAdminMode" onclick="toggleAdminModeClick()" style="padding: 6px 12px; font-size: 12px; border-color: var(--gold-line); margin-right: 8px;">
     🔑 ADMIN MODE
 </button>
+<button class="btn btn-ghost" id="btnToggleFullscreen" onclick="toggleFullscreen()" style="padding: 6px 12px; font-size: 14px; border-color: var(--gold-line); margin-right: 8px;" title="Layar Penuh">
+    ⛶
+</button>
 <button class="btn btn-ghost" id="btnBackHome" onclick="goHome()" style="display:none; padding: 6px 12px; font-size: 12px;">
         ⌂ HOME
     </button>
@@ -1410,6 +1416,27 @@
         
         // Trigger alert toast
         showToast(reason, "⚠️");
+    }
+
+    function toggleFullscreen() {
+        const docEl = document.documentElement;
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+            if (docEl.requestFullscreen) {
+                docEl.requestFullscreen().catch(err => {
+                    console.error("Error attempting to enable fullscreen:", err);
+                });
+            } else if (docEl.webkitRequestFullscreen) {
+                docEl.webkitRequestFullscreen();
+            } else {
+                showToast("Browser tidak mendukung Fullscreen API. Tambahkan web ke Beranda (Add to Home Screen) HP Anda untuk mode fullscreen penuh!", "ℹ️");
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
     }
 
     function showToast(msg, icon = 'ℹ️') {
