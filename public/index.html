@@ -2271,6 +2271,8 @@
                 }
             }
 
+            displayName = displayName.replace(/\.(json|yaml|yml)$/i, '');
+
             const dsObj = { name, displayName, count };
             if (categoriesMap[categoryName]) {
                 categoriesMap[categoryName].datasets.push(dsObj);
@@ -2329,8 +2331,8 @@
             catObj.datasets.forEach(ds => catTotalQ += ds.count);
 
             const iconHtml = catObj.icon
-                ? `<img src="${catObj.icon}" alt="${catName}" style="width: 24px; height: 24px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));" />`
-                : `<span style="font-size: 20px;">${catObj.emoji}</span>`;
+                ? `<img src="${catObj.icon}" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';" style="width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));" /><span style="display:none; font-size: 20px; flex-shrink: 0;">${catObj.emoji}</span>`
+                : `<span style="font-size: 20px; flex-shrink: 0;">${catObj.emoji}</span>`;
 
             let cardsHtml = '';
             if (catObj.datasets.length === 0) {
@@ -2408,8 +2410,8 @@
             catObj.datasets.forEach(ds => catTotalQ += ds.count);
 
             const iconHtml = catObj.icon
-                ? `<img src="${catObj.icon}" alt="${catName}" style="width: 24px; height: 24px; object-fit: contain;" />`
-                : `<span style="font-size: 20px;">${catObj.emoji}</span>`;
+                ? `<img src="${catObj.icon}" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';" style="width: 24px; height: 24px; object-fit: contain; flex-shrink: 0;" /><span style="display:none; font-size: 20px; flex-shrink: 0;">${catObj.emoji}</span>`
+                : `<span style="font-size: 20px; flex-shrink: 0;">${catObj.emoji}</span>`;
 
             let fileListHtml = '';
             if (catObj.datasets.length === 0) {
