@@ -137,9 +137,29 @@ app.post('/api/upload', verifyAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Empty file contents' });
     }
 
-    const questions = parsed.questions || parsed.cards || parsed;
-    if (!Array.isArray(questions)) {
-      return res.status(400).json({ error: 'Invalid document structure: questions/cards must be an array' });
+    let questions = [];
+    if (Array.isArray(parsed)) {
+      questions = parsed;
+    } else if (typeof parsed === 'object') {
+      const possibleKeys = ['multiple_choice', 'flashcards', 'questions', 'cards', 'short_answers', 'short_answer', 'quiz'];
+      let found = false;
+      possibleKeys.forEach(k => {
+        if (Array.isArray(parsed[k])) {
+          questions = questions.concat(parsed[k]);
+          found = true;
+        }
+      });
+      if (!found) {
+        Object.values(parsed).forEach(val => {
+          if (Array.isArray(val)) {
+            questions = questions.concat(val);
+          }
+        });
+      }
+    }
+
+    if (!questions || questions.length === 0) {
+      return res.status(400).json({ error: 'Invalid document structure: no valid questions array found' });
     }
 
     const safeName = path.basename(filename);
